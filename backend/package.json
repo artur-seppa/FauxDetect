@@ -34,7 +34,7 @@
   "devDependencies": {
     "@adonisjs/assembler": "^7.8.2",
     "@adonisjs/eslint-config": "^2.0.0",
-    "@adonisjs/prettier-config": "^1.4.4",
+    "@adonisjs/prettier-config": "^1.4.0",
     "@adonisjs/tsconfig": "^1.4.0",
     "@japa/api-client": "^3.1.0",
     "@japa/assert": "^4.0.1",
@@ -60,9 +60,9 @@
     "@google-cloud/documentai": "^9.6.0",
     "@rlanz/bull-queue": "^3.1.0",
     "@vinejs/vine": "^3.0.1",
-    "bullmq": "^5.76.1",
+    "bullmq": "^5.0.0",
     "edge.js": "^6.5.0",
-    "nodemailer": "^8.0.6",
+    "nodemailer": "^6.9.0",
     "pg": "^8.20.0",
     "reflect-metadata": "^0.2.2",
     "ulidx": "^2.4.1"
