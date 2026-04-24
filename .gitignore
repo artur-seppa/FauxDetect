@@ -1,0 +1,19 @@
+# Claude Code internal files
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.fleet
+.idea
+.vscode/
+*.swp
+*.swo
+
+# Secrets (catchall at root level)
+*.pem
+*.key
+service-account*.json
+gcp-credentials*.json
