@@ -64,7 +64,8 @@
     "edge.js": "^6.5.0",
     "nodemailer": "^8.0.6",
     "pg": "^8.20.0",
-    "reflect-metadata": "^0.2.2"
+    "reflect-metadata": "^0.2.2",
+    "ulidx": "^2.4.1"
   },
   "hotHook": {
     "boundaries": [

@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
+import { column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import AppBaseModel from '#models/base_model'
 import User from '#models/user'
 import Category from '#models/category'
 
@@ -14,12 +15,12 @@ export type FraudSignals = {
   confidenceVendor: number
 }
 
-export default class Expense extends BaseModel {
+export default class Expense extends AppBaseModel {
   @column({ isPrimary: true })
-  declare id: number
+  declare id: string
 
   @column()
-  declare userId: number
+  declare userId: string
 
   // File
   @column()
@@ -33,7 +34,7 @@ export default class Expense extends BaseModel {
 
   // Employee input
   @column()
-  declare selectedCategoryId: number | null
+  declare selectedCategoryId: string | null
 
   @column()
   declare employeeDescription: string | null
@@ -72,7 +73,7 @@ export default class Expense extends BaseModel {
   declare rejectionReason: string | null
 
   @column()
-  declare approvedBy: number | null
+  declare approvedBy: string | null
 
   @column.dateTime()
   declare approvedAt: DateTime | null

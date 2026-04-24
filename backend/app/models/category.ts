@@ -1,11 +1,12 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
+import { column, hasMany } from '@adonisjs/lucid/orm'
 import type { HasMany } from '@adonisjs/lucid/types/relations'
+import AppBaseModel from '#models/base_model'
 import Expense from '#models/expense'
 
-export default class Category extends BaseModel {
+export default class Category extends AppBaseModel {
   @column({ isPrimary: true })
-  declare id: number
+  declare id: string
 
   @column()
   declare name: string

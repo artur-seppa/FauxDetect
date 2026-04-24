@@ -5,10 +5,10 @@ export default class extends BaseSchema {
 
   async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table.increments('id')
+      table.string('id', 26).primary()
 
       // Owner
-      table.integer('user_id').notNullable().unsigned().references('id').inTable('users').onDelete('CASCADE')
+      table.string('user_id', 26).notNullable().references('id').inTable('users').onDelete('CASCADE')
 
       // Uploaded file
       table.string('original_filename').notNullable()
@@ -16,7 +16,7 @@ export default class extends BaseSchema {
       table.string('file_hash').notNullable().unique()
 
       // Category selected by employee
-      table.integer('selected_category_id').unsigned().nullable().references('id').inTable('categories').onDelete('SET NULL')
+      table.string('selected_category_id', 26).nullable().references('id').inTable('categories').onDelete('SET NULL')
       table.string('employee_description').nullable()
 
       // Data extracted by Google Document AI
@@ -25,7 +25,8 @@ export default class extends BaseSchema {
       table.string('extracted_vendor').nullable()
       table.string('extracted_description').nullable()
 
-      // Fraud analysis
+      // Fraud analysis — fraud_score stored alongside fraud_signals for
+      // performance and audit trail (immutable result from processing time)
       table.jsonb('fraud_signals').nullable()
       table.integer('fraud_score').nullable()
       table.text('fraud_details').nullable()
@@ -34,7 +35,7 @@ export default class extends BaseSchema {
       // Workflow
       table.enum('status', ['processing', 'pending', 'approved', 'rejected', 'manual_review']).notNullable().defaultTo('processing')
       table.text('rejection_reason').nullable()
-      table.integer('approved_by').unsigned().nullable().references('id').inTable('users').onDelete('SET NULL')
+      table.string('approved_by', 26).nullable().references('id').inTable('users').onDelete('SET NULL')
       table.timestamp('approved_at').nullable()
 
       table.timestamp('created_at').notNullable()
