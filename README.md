@@ -21,11 +21,16 @@ Intelligent expense reimbursement system with AI fraud detection powered by Goog
 
 ## Getting started
 
-### 1. Start infrastructure (PostgreSQL + Redis)
+### 1. Start infrastructure (PostgreSQL + Redis + Mailpit)
 
 ```bash
 docker compose up -d
 ```
+
+| Service | URL |
+|---------|-----|
+| API | http://localhost:3333 |
+| Mailpit (email UI) | http://localhost:8025 |
 
 ### 2. Backend setup
 
@@ -55,7 +60,8 @@ Copy `backend/.env.example` to `backend/.env` and fill in:
 |----------|-------------|
 | `DB_*` | PostgreSQL connection (matches docker-compose defaults) |
 | `REDIS_HOST / REDIS_PORT` | Redis connection (matches docker-compose defaults) |
-| `SMTP_*` | SMTP credentials for outgoing email |
+| `SMTP_HOST / SMTP_PORT` | SMTP server — defaults point to Mailpit (`localhost:1025`) |
+| `SMTP_USER / SMTP_PASS` | Optional — leave empty when using Mailpit |
 | `GOOGLE_PROJECT_ID` | GCP project ID |
 | `GOOGLE_PROCESSOR_ID` | Document AI processor ID |
 | `GOOGLE_APPLICATION_CREDENTIALS` | Path to GCP service account JSON |
@@ -64,7 +70,7 @@ Copy `backend/.env.example` to `backend/.env` and fill in:
 
 ```
 faux-detect/
-├── docker-compose.yml      # PostgreSQL + Redis
+├── docker-compose.yml      # PostgreSQL + Redis + Mailpit
 ├── backend/                # AdonisJS v6
 │   ├── app/
 │   │   ├── models/         # User, Category, Expense

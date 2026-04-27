@@ -1,6 +1,6 @@
 # FauxDetect — Intelligent Expense Reimbursement with AI Fraud Detection
 
-Expense reimbursement management system with fraud detection powered by Google Cloud Document AI.
+Expense reimbursement management system with fraud detection powered by Tesseract OCR.
 
 ## Stack
 
@@ -8,11 +8,11 @@ Expense reimbursement management system with fraud detection powered by Google C
 |-------|-----------|
 | Frontend | Next.js (App Router) + Tailwind CSS |
 | Backend | Node.js + AdonisJS v6 |
-| Queue | Adonis Queue (async processing of emails and Google API calls) |
+| Queue | @rlanz/bull-queue + BullMQ (Redis) |
 | Database | PostgreSQL + Lucid ORM (AdonisJS) |
-| Auth | AdonisJS Auth (JWT) |
+| Auth | AdonisJS Auth (access tokens) |
 | File Upload | AdonisJS Drive |
-| OCR / AI | Google Cloud Document AI (`@google-cloud/documentai`) |
+| OCR | Tesseract.js (`tesseract.js` + `pdf-parse`) |
 | Email | AdonisJS Mail (dispatched via Adonis Queue) |
 
 ## Repository Structure
@@ -24,12 +24,12 @@ faux-detect/
 │   │   ├── controllers/
 │   │   ├── models/
 │   │   ├── services/
-│   │   │   ├── google_document_ai_service.ts
+│   │   │   ├── ocr_service.ts             # OcrService interface
+│   │   │   ├── tesseract_ocr_service.ts   # Tesseract implementation
 │   │   │   ├── fraud_detector_service.ts
-│   │   │   ├── category_matcher_service.ts
-│   │   │   └── email_service.ts
-│   │   ├── jobs/                          # Adonis Queue jobs
-│   │   │   ├── process_expense_job.ts     # Calls Google Doc AI
+│   │   │   └── category_matcher_service.ts
+│   │   ├── jobs/                          # Bull Queue jobs
+│   │   │   ├── process_expense_job.ts     # OCR + fraud analysis
 │   │   │   └── send_email_job.ts          # Sends email via queue
 │   │   └── middleware/
 │   ├── database/
@@ -65,11 +65,10 @@ faux-detect/
 
 ### Fraud Score (0–100)
 ```
-image_manipulation       → +40
-online_duplicate         → +50
-suspicious_words         → +10
-confidence.amount < 0.7  → +15
-confidence.vendor < 0.6  → +15
+duplicate_file                → +50  (SHA256 match in DB)
+amount_exceeds_category_limit → +20  (extracted > category.max_amount)
+low_ocr_confidence            → +15  (Tesseract avg confidence < 70%)
+suspicious_words              → +10  (keywords: test, fake, lorem, etc.)
 
 >= 70  → REJECTED automatically
 40–69  → MANUAL_REVIEW
@@ -87,7 +86,7 @@ Parking:            ["parking", "valet", "garage"]
 ```
 
 ### Deduplication
-SHA256 hash of the file buffer. If it already exists in the database → immediate rejection without calling Google.
+SHA256 hash of the file buffer. If it already exists in the database → `duplicate_file` signal adds +50 to fraud score, triggering automatic rejection.
 
 ## Processing Flow (Queue)
 
@@ -95,8 +94,8 @@ SHA256 hash of the file buffer. If it already exists in the database → immedia
 1. Employee uploads file → backend saves it + creates Expense with status=processing
 2. Dispatcher enqueues ProcessExpenseJob
 3. ProcessExpenseJob:
-   a. Computes SHA256 hash → checks for duplicate
-   b. Calls Google Document AI
+   a. Reads file from storage → computes SHA256 → checks for duplicate
+   b. Runs Tesseract OCR (image) or pdf-parse (PDF)
    c. Calculates fraudScore + categoryMatch
    d. Updates Expense (final status + extracted data)
    e. Enqueues SendEmailJob if status = rejected (high score)
@@ -113,13 +112,7 @@ DATABASE_URL=postgresql://...
 # AdonisJS
 APP_KEY=...
 
-# Google Cloud Document AI
-GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
-GOOGLE_PROJECT_ID=...
-GOOGLE_LOCATION=us    # or eu
-GOOGLE_PROCESSOR_ID=...
-
-# Queue (Redis for Adonis Queue)
+# Queue (Redis)
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
 

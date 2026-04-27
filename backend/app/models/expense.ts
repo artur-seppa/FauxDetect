@@ -8,11 +8,10 @@ import Category from '#models/category'
 export type ExpenseStatus = 'processing' | 'pending' | 'approved' | 'rejected' | 'manual_review'
 
 export type FraudSignals = {
-  imageManipulation: boolean
-  onlineDuplicate: boolean
+  duplicateFile: boolean
+  lowOcrConfidence: boolean
   suspiciousWords: boolean
-  confidenceAmount: number
-  confidenceVendor: number
+  amountExceedsCategoryLimit: boolean
 }
 
 export default class Expense extends AppBaseModel {
@@ -39,7 +38,7 @@ export default class Expense extends AppBaseModel {
   @column()
   declare employeeDescription: string | null
 
-  // Extracted by Google Document AI
+  // Extracted by OCR
   @column()
   declare extractedAmount: number | null
 
@@ -61,9 +60,6 @@ export default class Expense extends AppBaseModel {
 
   @column()
   declare fraudDetails: string | null
-
-  @column()
-  declare categoryMatch: boolean | null
 
   // Workflow
   @column()

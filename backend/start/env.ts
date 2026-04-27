@@ -18,16 +18,14 @@ export default await Env.create(new URL('../', import.meta.url), {
   REDIS_HOST: Env.schema.string({ format: 'host' }),
   REDIS_PORT: Env.schema.number(),
 
+  // Taggun OCR
+  TAGGUN_API_KEY: Env.schema.string(),
+
   // Email (SMTP)
   SMTP_HOST: Env.schema.string(),
   SMTP_PORT: Env.schema.number(),
-  SMTP_USER: Env.schema.string(),
-  SMTP_PASS: Env.schema.string(),
+  SMTP_USER: Env.schema.string.optional(),
+  SMTP_PASS: Env.schema.string.optional(),
   MAIL_FROM: Env.schema.string(),
 
-  // Google Cloud Document AI
-  GOOGLE_PROJECT_ID: Env.schema.string(),
-  GOOGLE_LOCATION: Env.schema.string(),
-  GOOGLE_PROCESSOR_ID: Env.schema.string(),
-  GOOGLE_APPLICATION_CREDENTIALS: Env.schema.string(),
 })
