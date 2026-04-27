@@ -1,6 +1,6 @@
 # FauxDetect
 
-Intelligent expense reimbursement system with AI fraud detection powered by Google Cloud Document AI.
+Intelligent expense reimbursement system with fraud detection powered by Tesseract OCR.
 
 ## Stack
 
@@ -11,7 +11,7 @@ Intelligent expense reimbursement system with AI fraud detection powered by Goog
 | Queue | @rlanz/bull-queue + BullMQ (Redis) |
 | Database | PostgreSQL + Lucid ORM |
 | Auth | AdonisJS Auth (access tokens) |
-| OCR / AI | Google Cloud Document AI |
+| OCR | Tesseract.js + Taggun OCR |
 | Email | AdonisJS Mail (SMTP) |
 
 ## Prerequisites
@@ -36,7 +36,8 @@ docker compose up -d
 
 ```bash
 cd backend
-cp .env.example .env   # fill in your credentials
+cp .env.example .env
+node ace generate:key   # paste the output into APP_KEY in .env
 npm install
 node ace migration:run
 node ace db:seed
@@ -62,9 +63,7 @@ Copy `backend/.env.example` to `backend/.env` and fill in:
 | `REDIS_HOST / REDIS_PORT` | Redis connection (matches docker-compose defaults) |
 | `SMTP_HOST / SMTP_PORT` | SMTP server — defaults point to Mailpit (`localhost:1025`) |
 | `SMTP_USER / SMTP_PASS` | Optional — leave empty when using Mailpit |
-| `GOOGLE_PROJECT_ID` | GCP project ID |
-| `GOOGLE_PROCESSOR_ID` | Document AI processor ID |
-| `GOOGLE_APPLICATION_CREDENTIALS` | Path to GCP service account JSON |
+| `TAGGUN_API_KEY` | Taggun OCR API key (https://www.taggun.io) |
 
 ## Project structure
 
@@ -76,7 +75,7 @@ faux-detect/
 │   │   ├── models/         # User, Category, Expense
 │   │   ├── controllers/
 │   │   ├── middleware/
-│   │   ├── services/       # Google Doc AI, fraud detector, category matcher, email
+│   │   ├── services/       # Taggun OCR, fraud detector, category matcher
 │   │   └── jobs/           # ProcessExpenseJob, SendEmailJob (Bull Queue)
 │   ├── config/             # database, auth, mail, queue
 │   ├── database/
