@@ -30,7 +30,7 @@ export default class User extends compose(AppBaseModel, AuthFinder) {
   declare role: 'employee' | 'hr' | 'admin'
 
   @column()
-  declare department: string | null
+  declare department: 'engineering' | 'human resources' | 'finance' | 'marketing' | 'operations' | 'sales' | null
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -41,5 +41,7 @@ export default class User extends compose(AppBaseModel, AuthFinder) {
   @hasMany(() => Expense)
   declare expenses: HasMany<typeof Expense>
 
-  static accessTokens = DbAccessTokensProvider.forModel(User)
+  static accessTokens = DbAccessTokensProvider.forModel(User, {
+    expiresIn: '7 days',
+  })
 }

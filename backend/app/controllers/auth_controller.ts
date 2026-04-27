@@ -1,9 +1,26 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
-import { registerValidator } from '#validators/auth_validator'
+import { registerValidator, loginValidator } from '#validators/auth_validator'
 
 export default class AuthController {
-  async register({ request, response }: HttpContext) {
+  async login({ auth, request, response }: HttpContext) {
+    const { email, password } = await request.validateUsing(loginValidator)
+
+    const user = await User.verifyCredentials(email, password)
+    const token = await auth.use('api').createToken(user)
+
+    return response.ok({
+      token: token.value!.release(),
+      user: user.serialize(),
+    })
+  }
+
+  async logout({ auth, response }: HttpContext) {
+    await auth.use('api').invalidateToken()
+    return response.noContent()
+  }
+
+  async register({ auth, request, response }: HttpContext) {
     const data = await request.validateUsing(registerValidator)
 
     const existingUser = await User.findBy('email', data.email)
@@ -19,7 +36,7 @@ export default class AuthController {
       department: data.department ?? null,
     })
 
-    const token = await User.accessTokens.create(user)
+    const token = await auth.use('api').createToken(user)
 
     return response.created({
       token: token.value!.release(),

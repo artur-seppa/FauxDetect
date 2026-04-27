@@ -1,4 +1,5 @@
 import { defineConfig } from '@adonisjs/auth'
+import type { InferAuthenticators } from '@adonisjs/auth/types'
 import { tokensGuard, tokensUserProvider } from '@adonisjs/auth/access_tokens'
 
 const authConfig = defineConfig({

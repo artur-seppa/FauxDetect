@@ -18,14 +18,14 @@ export default class InitialSeeder extends BaseSeeder {
         email: 'hr@company.com',
         password: 'admin123',
         role: 'hr',
-        department: 'Human Resources',
+        department: 'human resources',
       },
       {
         fullName: 'John Employee',
         email: 'john@company.com',
         password: 'password123',
         role: 'employee',
-        department: 'Engineering',
+        department: 'engineering',
       },
     ])
   }
