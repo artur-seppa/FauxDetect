@@ -46,6 +46,23 @@ node ace serve --hmr
 
 The API will be available at `http://localhost:3333`.
 
+### 3. Running tests
+
+Create the test database (first time only):
+
+```bash
+sudo docker exec fauxdetect-postgres createdb -U postgres fauxdetect_test
+```
+
+Then run the test suite from the `backend` directory:
+
+```bash
+cd backend
+node ace test
+```
+
+The test runner applies migrations automatically via `testUtils.db().migrate()`, so no manual setup is needed beyond creating the database.
+
 ### Test credentials (seeded)
 
 | Role | Email | Password |

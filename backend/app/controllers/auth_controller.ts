@@ -17,7 +17,7 @@ export default class AuthController {
 
   async logout({ auth, response }: HttpContext) {
     await auth.use('api').invalidateToken()
-    return response.noContent()
+    return response.ok({ message: 'Logged out successfully' })
   }
 
   async register({ auth, request, response }: HttpContext) {
