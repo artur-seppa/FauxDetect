@@ -10,6 +10,7 @@ export default defineConfig({
     () => import('@adonisjs/core/commands'),
     () => import('@adonisjs/lucid/commands'),
     () => import('@rlanz/bull-queue/commands'),
+    () => import('@adonisjs/bouncer/commands')
   ],
 
   providers: [
@@ -25,6 +26,7 @@ export default defineConfig({
     () => import('@adonisjs/auth/auth_provider'),
     () => import('@adonisjs/mail/mail_provider'),
     () => import('@rlanz/bull-queue/queue_provider'),
+    () => import('@adonisjs/bouncer/bouncer_provider')
   ],
 
   preloads: [() => import('#start/routes'), () => import('#start/kernel')],
