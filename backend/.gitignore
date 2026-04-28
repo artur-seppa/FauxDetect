@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# AdonisJS build output
+build/
+tmp/
+
+# Environment variables — never commit secrets
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+
+# Google Cloud service account key
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pino-pretty.log
+
+# File uploads (AdonisJS Drive local disk)
+uploads/
+storage/
+
+# Test coverage
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.fleet
+.idea
+.vscode/
+*.swp
+*.swo
