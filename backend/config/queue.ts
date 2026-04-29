@@ -6,7 +6,14 @@ export default defineConfig({
     host: env.get('REDIS_HOST'),
     port: env.get('REDIS_PORT'),
   },
+  queueNames: ['expenses', 'emails'],
   queue: {},
-  worker: {},
-  jobs: {},
+  worker: {
+    concurrency: 5,
+  },
+  jobs: {
+    attempts: 3,
+    removeOnComplete: 100,
+    removeOnFail: 100,
+  },
 })

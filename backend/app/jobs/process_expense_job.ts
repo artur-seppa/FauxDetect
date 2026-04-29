@@ -1,12 +1,12 @@
 import { Job } from '@rlanz/bull-queue'
 import { createHash } from 'node:crypto'
-import { readFile } from 'node:fs/promises'
-import app from '@adonisjs/core/services/app'
+import drive from '@adonisjs/drive/services/main'
 import queue from '@rlanz/bull-queue/services/main'
 import Expense from '#models/expense'
 import Category from '#models/category'
 import TaggunOcrService from '#services/taggun_ocr_service'
 import FraudDetectorService from '#services/fraud_detector_service'
+import CategoryMatcherService from '#services/category_matcher_service'
 import SendEmailJob from '#jobs/send_email_job'
 
 interface Payload {
@@ -24,8 +24,8 @@ export default class ProcessExpenseJob extends Job {
       .preload('user')
       .firstOrFail()
 
-    const filePath = app.makePath('storage', expense.filePath)
-    const buffer = await readFile(filePath)
+    const bytes = await drive.use().getBytes(expense.filePath)
+    const buffer = Buffer.from(bytes)
 
     const hash = createHash('sha256').update(buffer).digest('hex')
     const isDuplicate =
@@ -41,6 +41,11 @@ export default class ProcessExpenseJob extends Job {
       : null
 
     const fraud = new FraudDetectorService().analyze(ocr, selectedCategory, isDuplicate)
+    const categoryMatch = new CategoryMatcherService().match(
+      selectedCategory,
+      ocr.extractedVendor,
+      ocr.extractedDescription
+    )
 
     await expense
       .merge({
@@ -52,17 +57,18 @@ export default class ProcessExpenseJob extends Job {
         fraudSignals: fraud.signals,
         fraudScore: fraud.score,
         fraudDetails: fraud.details,
+        categoryMatch,
         status: fraud.status,
         rejectionReason: fraud.status === 'rejected' ? fraud.details : null,
       })
       .save()
 
     if (fraud.status === 'rejected') {
-      await queue.dispatch(SendEmailJob, {
-        to: expense.user.email,
-        expenseId: expense.id,
-        reason: fraud.details,
-      })
+      await queue.dispatch(
+        SendEmailJob,
+        { to: expense.user.email, expenseId: expense.id, reason: fraud.details },
+        { queueName: 'emails' }
+      )
     }
   }
 
