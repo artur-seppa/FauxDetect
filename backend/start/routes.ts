@@ -15,9 +15,9 @@ const CategoriesController = () => import('#controllers/categories_controller')
 const ExpensesController = () => import('#controllers/expenses_controller')
 
 router.group(() => {
-  router.post('/auth/login', [AuthController, 'login'])
-  router.post('/auth/register', [AuthController, 'register'])
-  router.delete('/auth/logout', [AuthController, 'logout']).use(middleware.auth())
+  router.post('/login', [AuthController, 'login'])
+  router.post('/register', [AuthController, 'register'])
+  router.delete('/logout', [AuthController, 'logout']).use(middleware.auth())
 }).prefix('/api/auth')
 
 router.group(() => {
@@ -25,9 +25,9 @@ router.group(() => {
 }).prefix('/api').use(middleware.auth())
 
 router.group(() => {
-  router.get('/expenses', [ExpensesController, 'index'])
-  router.post('/expenses', [ExpensesController, 'store'])
-  router.get('/expenses/:id', [ExpensesController, 'show'])
-  router.patch('/expenses/:id/approve', [ExpensesController, 'approve'])
-  router.patch('/expenses/:id/reject', [ExpensesController, 'reject'])
-}).prefix('/api').use(middleware.auth())
+  router.get('/', [ExpensesController, 'index'])
+  router.post('/', [ExpensesController, 'store'])
+  router.get('/:id', [ExpensesController, 'show'])
+  router.patch('/:id/approve', [ExpensesController, 'approve'])
+  router.patch('/:id/reject', [ExpensesController, 'reject'])
+}).prefix('/api/expenses').use(middleware.auth())
