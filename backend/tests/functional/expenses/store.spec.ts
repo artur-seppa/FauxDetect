@@ -56,6 +56,20 @@ test.group('Expenses / Store', (group) => {
     response.assertBodyContains({ errors: [{ field: 'receipt' }] })
   })
 
+  test('returns 422 when selectedCategoryId does not exist', async ({ client }) => {
+    const { token } = await loginAs(client, 'employee')
+    const file = await fileGenerator.generatePng(1)
+
+    const response = await client
+      .post(BASE_URL)
+      .header('Authorization', `Bearer ${token}`)
+      .file('receipt', file.contents, { filename: file.name, contentType: file.mime })
+      .field('selectedCategoryId', 'non-existent-id')
+
+    response.assertStatus(422)
+    response.assertBodyContains({ errors: [{ field: 'selectedCategoryId' }] })
+  })
+
   test('returns 422 when selectedCategoryId is missing', async ({ client }) => {
     const { token } = await loginAs(client, 'employee')
     const file = await fileGenerator.generatePng(1)
