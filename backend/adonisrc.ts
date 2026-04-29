@@ -30,7 +30,14 @@ export default defineConfig({
     () => import('@adonisjs/drive/drive_provider')
   ],
 
-  preloads: [() => import('#start/routes'), () => import('#start/kernel')],
+  preloads: [
+    () => import('#start/routes'),
+    () => import('#start/kernel'),
+    {
+      file: () => import('#start/bull_board'),
+      environment: ['web'],
+    },
+  ],
 
   tests: {
     suites: [
