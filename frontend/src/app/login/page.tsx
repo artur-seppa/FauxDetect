@@ -30,9 +30,9 @@ export default function LoginPage() {
   async function onSubmit(data: FormData) {
     setError(null)
     try {
-      const res = await login(data.email, data.password)
+      const user = await login(data.email, data.password)
       refreshUser()
-      router.push(res.user.role === 'employee' ? '/dashboard' : '/hr/dashboard')
+      router.push(user.role === 'employee' ? '/dashboard' : '/hr/dashboard')
     } catch {
       setError('E-mail ou senha inválidos.')
     }

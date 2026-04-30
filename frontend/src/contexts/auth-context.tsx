@@ -1,12 +1,11 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { getStoredUser, clearAuthCookies } from '@/hooks/use-auth'
-import { api } from '@/lib/api'
-import type { User } from '@/lib/types'
+import { getStoredUserInfo, useAuth } from '@/hooks/use-auth'
+import type { UserInfo } from '@/hooks/use-auth'
 
 interface AuthContextValue {
-  user: User | null
+  user: UserInfo | null
   isLoading: boolean
   refreshUser: () => void
   logout: () => Promise<void>
@@ -15,27 +14,23 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<UserInfo | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const { logout: authLogout } = useAuth()
 
   const refreshUser = useCallback(() => {
-    setUser(getStoredUser())
+    setUser(getStoredUserInfo())
   }, [])
 
   useEffect(() => {
-    setUser(getStoredUser())
+    setUser(getStoredUserInfo())
     setIsLoading(false)
   }, [])
 
   const logout = useCallback(async () => {
-    try {
-      await api.post('/auth/logout')
-    } finally {
-      clearAuthCookies()
-      setUser(null)
-      window.location.href = '/login'
-    }
-  }, [])
+    await authLogout()
+    setUser(null)
+  }, [authLogout])
 
   return (
     <AuthContext.Provider value={{ user, isLoading, refreshUser, logout }}>
