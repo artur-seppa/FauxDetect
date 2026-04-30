@@ -1,0 +1,95 @@
+@mjml()
+<mjml>
+  <mj-head>
+    <mj-font name="Inter" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" />
+    <mj-attributes>
+      <mj-all font-family="Inter, Arial, sans-serif" />
+      <mj-text font-size="14px" line-height="22px" color="#374151" />
+    </mj-attributes>
+  </mj-head>
+
+  <mj-body background-color="#f3f4f6">
+
+    <!-- Header -->
+    <mj-section background-color="#1e293b" padding="24px 32px">
+      <mj-column>
+        <mj-text font-size="20px" font-weight="700" color="#ffffff" letter-spacing="0.5px">
+          FauxDetect
+        </mj-text>
+        <mj-text font-size="12px" color="#94a3b8" padding-top="0">
+          Expense Reimbursement Platform
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Status badge + headline -->
+    <mj-section background-color="#ffffff" padding="28px 32px 0">
+      <mj-column>
+        @if(status === 'manual_review')
+          <mj-text>
+            <span style="display:inline-block;background-color:#d97706;color:#ffffff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:9999px;letter-spacing:0.8px;text-transform:uppercase;">
+              Manual Review
+            </span>
+          </mj-text>
+          <mj-text font-size="15px" padding-top="12px">
+            Expense requires <strong>manual review</strong> due to suspicious signals detected during OCR processing.
+          </mj-text>
+        @else
+          <mj-text>
+            <span style="display:inline-block;background-color:#2563eb;color:#ffffff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:9999px;letter-spacing:0.8px;text-transform:uppercase;">
+              Pending Review
+            </span>
+          </mj-text>
+          <mj-text font-size="15px" padding-top="12px">
+            A new expense is <strong>awaiting your review</strong>.
+          </mj-text>
+        @end
+      </mj-column>
+    </mj-section>
+
+    <!-- Details card -->
+    <mj-section background-color="#ffffff" padding="20px 32px">
+      <mj-column border="1px solid #e2e8f0" border-radius="6px" background-color="#f8fafc" padding="0">
+
+        <mj-divider border-width="0" padding="0" />
+
+        <mj-text padding="14px 20px 4px">
+          <span style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Expense ID</span>
+        </mj-text>
+        <mj-text padding="0 20px 14px" font-size="13px" font-weight="600" color="#0f172a" font-family="monospace, monospace">
+          #{{ expenseId }}
+        </mj-text>
+
+        <mj-divider border-color="#e2e8f0" border-width="1px" padding="0" />
+
+        <mj-text padding="14px 20px 4px">
+          <span style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Submitted by</span>
+        </mj-text>
+        <mj-text padding="0 20px 14px" font-size="13px" font-weight="600" color="#0f172a">
+          {{ employeeName }}
+        </mj-text>
+
+        <mj-divider border-color="#e2e8f0" border-width="1px" padding="0" />
+
+        <mj-text padding="14px 20px 4px">
+          <span style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Fraud Signals</span>
+        </mj-text>
+        <mj-text padding="0 20px 14px" font-size="13px" color="#dc2626">
+          {{ fraudDetails }}
+        </mj-text>
+
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer -->
+    <mj-section background-color="#ffffff" border-top="1px solid #f1f5f9" padding="16px 32px 24px">
+      <mj-column>
+        <mj-text font-size="12px" color="#9ca3af">
+          This is an automated message from FauxDetect. Do not reply to this email.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+  </mj-body>
+</mjml>
+@end

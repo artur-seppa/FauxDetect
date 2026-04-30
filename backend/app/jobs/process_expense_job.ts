@@ -75,7 +75,12 @@ export default class ProcessExpenseJob extends Job {
     if (fraud.status === 'pending' || fraud.status === 'manual_review') {
       await queue.dispatch(
         NotifyHrJob,
-        { expenseId: expense.id, employeeName: expense.user.fullName, status: fraud.status },
+        {
+          expenseId: expense.id,
+          employeeName: expense.user.fullName,
+          status: fraud.status,
+          fraudDetails: fraud.details,
+        },
         { queueName: 'emails' }
       )
     }

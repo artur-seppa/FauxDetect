@@ -72,6 +72,7 @@
     "bullmq": "^5.0.0",
     "edge.js": "^6.5.0",
     "express": "^5.2.1",
+    "mjml": "^4.18.0",
     "nodemailer": "^6.9.0",
     "pg": "^8.20.0",
     "reflect-metadata": "^0.2.2",
