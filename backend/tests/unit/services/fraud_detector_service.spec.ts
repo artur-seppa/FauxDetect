@@ -66,7 +66,7 @@ test.group('FraudDetectorService', () => {
   })
 
   test('returns rejected when score >= 70', ({ assert }) => {
-    const ocr = { ...baseOcr, confidence: 60 }
+    const ocr = { ...baseOcr, confidence: 60, rawText: 'test receipt fake' }
     const result = new FraudDetectorService().analyze(ocr, null, true)
 
     assert.isAtLeast(result.score, 70)

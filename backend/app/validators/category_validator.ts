@@ -5,6 +5,7 @@ export const storeCategoryValidator = vine.compile(
     name: vine.string().trim().minLength(1).maxLength(100),
     maxAmount: vine.number().positive().optional(),
     active: vine.boolean().optional(),
+    keywords: vine.array(vine.string().trim().minLength(1).maxLength(50)).optional(),
   })
 )
 
@@ -13,5 +14,6 @@ export const updateCategoryValidator = vine.compile(
     name: vine.string().trim().minLength(1).maxLength(100).optional(),
     maxAmount: vine.number().positive().nullable().optional(),
     active: vine.boolean().optional(),
+    keywords: vine.array(vine.string().trim().minLength(1).maxLength(50)).optional(),
   })
 )

@@ -38,7 +38,20 @@ test.group('Categories / Store', (group) => {
     const body = response.body()
     response.assert!.isString(body.id)
     response.assert!.isNotEmpty(body.id)
-    response.assertBodyContains({ name: 'Meals', active: true })
+    response.assertBodyContains({ name: 'Meals', active: true, keywords: [] })
+  })
+
+  test('returns 201 with keywords when provided', async ({ client }) => {
+    const { token } = await loginAs(client, 'hr')
+
+    const response = await client
+      .post(BASE_URL)
+      .header('Authorization', `Bearer ${token}`)
+      .json({ name: 'Lunch', keywords: ['restaurant', 'food', 'ifood'] })
+
+    response.assertStatus(201)
+    const body = response.body()
+    response.assert!.sameMembers(body.keywords, ['restaurant', 'food', 'ifood'])
   })
 
   test('returns 201 with created category when user is admin', async ({ client }) => {
@@ -53,7 +66,7 @@ test.group('Categories / Store', (group) => {
     const body = response.body()
     response.assert!.isString(body.id)
     response.assert!.isNotEmpty(body.id)
-    response.assertBodyContains({ name: 'Parking', maxAmount: null, active: true })
+    response.assertBodyContains({ name: 'Parking', maxAmount: null, active: true, keywords: [] })
   })
 
   test('returns 201 with active defaulting to true when not provided', async ({ client }) => {
@@ -65,7 +78,7 @@ test.group('Categories / Store', (group) => {
       .json({ name: 'Hotel' })
 
     response.assertStatus(201)
-    response.assertBodyContains({ name: 'Hotel', maxAmount: null, active: true })
+    response.assertBodyContains({ name: 'Hotel', maxAmount: null, active: true, keywords: [] })
   })
 
   test('returns 409 when category name already exists', async ({ client }) => {
@@ -91,5 +104,17 @@ test.group('Categories / Store', (group) => {
 
     response.assertStatus(422)
     response.assertBodyContains({ errors: [{ field: 'name' }] })
+  })
+
+  test('returns 422 when keywords contains non-string values', async ({ client }) => {
+    const { token } = await loginAs(client, 'hr')
+
+    const response = await client
+      .post(BASE_URL)
+      .header('Authorization', `Bearer ${token}`)
+      .json({ name: 'Meals', keywords: [1, 2, 3] })
+
+    response.assertStatus(422)
+    response.assertBodyContains({ errors: [{ field: 'keywords.0' }] })
   })
 })

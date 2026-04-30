@@ -1,11 +1,12 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Category from '#models/category'
+import CategoryKeyword from '#models/category_keyword'
 import CategoryPolicy from '#policies/category_policy'
 import { storeCategoryValidator, updateCategoryValidator } from '#validators/category_validator'
 
 export default class CategoriesController {
   async index({ response }: HttpContext) {
-    const categories = await Category.query().orderBy('name', 'asc')
+    const categories = await Category.query().orderBy('name', 'asc').preload('keywords')
     return response.ok(categories)
   }
 
@@ -24,6 +25,14 @@ export default class CategoriesController {
       maxAmount: data.maxAmount ?? null,
       active: data.active ?? true,
     })
+
+    if (data.keywords?.length) {
+      await CategoryKeyword.createMany(
+        data.keywords.map((name) => ({ categoryId: category.id, name }))
+      )
+    }
+
+    await category.load('keywords')
 
     return response.created(category)
   }
@@ -52,6 +61,17 @@ export default class CategoriesController {
     })
 
     await category.save()
+
+    if (data.keywords !== undefined) {
+      await CategoryKeyword.query().where('categoryId', category.id).delete()
+      if (data.keywords.length) {
+        await CategoryKeyword.createMany(
+          data.keywords.map((name) => ({ categoryId: category.id, name }))
+        )
+      }
+    }
+
+    await category.load('keywords')
 
     return response.ok(category)
   }

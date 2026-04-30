@@ -8,6 +8,7 @@ import TaggunOcrService from '#services/taggun_ocr_service'
 import FraudDetectorService from '#services/fraud_detector_service'
 import CategoryMatcherService from '#services/category_matcher_service'
 import SendEmailJob from '#jobs/send_email_job'
+import NotifyHrJob from '#jobs/notify_hr_job'
 
 interface Payload {
   expenseId: string
@@ -35,7 +36,7 @@ export default class ProcessExpenseJob extends Job {
     const mimeType = this.#resolveMimeType(expense.originalFilename)
     const ocr = await new TaggunOcrService().process(buffer, mimeType)
 
-    const categories = await Category.query().where('active', true)
+    const categories = await Category.query().where('active', true).preload('keywords')
     const selectedCategory = expense.selectedCategoryId
       ? categories.find((c) => c.id === expense.selectedCategoryId) ?? null
       : null
@@ -70,6 +71,14 @@ export default class ProcessExpenseJob extends Job {
         { queueName: 'emails' }
       )
     }
+
+    if (fraud.status === 'pending' || fraud.status === 'manual_review') {
+      await queue.dispatch(
+        NotifyHrJob,
+        { expenseId: expense.id, employeeName: expense.user.fullName, status: fraud.status },
+        { queueName: 'emails' }
+      )
+    }
   }
 
   async rescue(payload: Payload, error: Error): Promise<void> {
@@ -80,6 +89,7 @@ export default class ProcessExpenseJob extends Job {
   #resolveMimeType(filename: string): string {
     const ext = filename.split('.').pop()?.toLowerCase()
     if (ext === 'pdf') return 'application/pdf'
+    if (ext === 'png') return 'image/png'
     return 'image/jpeg'
   }
 }

@@ -1,6 +1,5 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
-import drive from '@adonisjs/drive/services/main'
 import { UserFactory } from '#database/factories/user_factory'
 import { ExpenseFactory } from '#database/factories/expense_factory'
 import { loginAs } from '#tests/helpers/login_as'
@@ -9,10 +8,6 @@ const BASE_URL = '/api/expenses'
 
 test.group('Expenses / Show', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
-  group.each.setup(() => {
-    drive.fake()
-    return () => drive.restore()
-  })
 
   test('returns 401 when unauthenticated', async ({ client }) => {
     const expense = await ExpenseFactory.with('user').create()

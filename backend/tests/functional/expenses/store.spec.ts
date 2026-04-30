@@ -101,8 +101,6 @@ test.group('Expenses / Store', (group) => {
       originalFilename: file.name,
       selectedCategoryId: category.id,
       status: 'processing',
-      rejectionReason: null,
-      approvedBy: null,
     })
   })
 
