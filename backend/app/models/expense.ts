@@ -61,6 +61,9 @@ export default class Expense extends AppBaseModel {
   @column()
   declare fraudDetails: string | null
 
+  @column()
+  declare categoryMatch: boolean | null
+
   // Workflow
   @column()
   declare status: ExpenseStatus

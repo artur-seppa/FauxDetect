@@ -13,7 +13,7 @@ export default class extends BaseSchema {
       // Uploaded file
       table.string('original_filename').notNullable()
       table.string('file_path').notNullable()
-      table.string('file_hash').notNullable().unique()
+      table.string('file_hash').notNullable()
 
       // Category selected by employee
       table.string('selected_category_id', 26).nullable().references('id').inTable('categories').onDelete('SET NULL')

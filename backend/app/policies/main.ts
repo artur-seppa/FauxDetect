@@ -14,4 +14,5 @@
 
 export const policies = {
   CategoryPolicy: () => import('#policies/category_policy'),
+  ExpensePolicy: () => import('#policies/expense_policy'),
 }
