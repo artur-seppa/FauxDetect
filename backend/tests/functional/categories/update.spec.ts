@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { CategoryFactory } from '#database/factories/category_factory'
+import CategoryKeyword from '#models/category_keyword'
 import { loginAs } from '#tests/helpers/login_as'
 
 const BASE_URL = '/api/categories'
@@ -11,9 +12,7 @@ test.group('Categories / Update', (group) => {
   test('returns 401 when unauthenticated', async ({ client }) => {
     const category = await CategoryFactory.create()
 
-    const response = await client
-      .patch(`${BASE_URL}/${category.id}`)
-      .json({ name: 'Updated' })
+    const response = await client.patch(`${BASE_URL}/${category.id}`).json({ name: 'Updated' })
 
     response.assertStatus(401)
   })
@@ -41,7 +40,7 @@ test.group('Categories / Update', (group) => {
       .json({ name: 'New Name', maxAmount: 100 })
 
     response.assertStatus(200)
-    response.assertBodyContains({ id: category.id, name: 'New Name' })
+    response.assertBodyContains({ id: category.id, name: 'New Name', keywords: [] })
   })
 
   test('returns 200 updating only the provided fields', async ({ client }) => {
@@ -55,6 +54,73 @@ test.group('Categories / Update', (group) => {
 
     response.assertStatus(200)
     response.assertBodyContains({ id: category.id, name: 'Meals', active: false })
+  })
+
+  test('sets keywords when provided on update', async ({ client }) => {
+    const { token } = await loginAs(client, 'hr')
+    const category = await CategoryFactory.merge({ name: 'Lunch' }).create()
+
+    const response = await client
+      .patch(`${BASE_URL}/${category.id}`)
+      .header('Authorization', `Bearer ${token}`)
+      .json({ keywords: ['restaurant', 'food'] })
+
+    response.assertStatus(200)
+    const body = response.body()
+    response.assert!.sameMembers(body.keywords, ['restaurant', 'food'])
+  })
+
+  test('replaces existing keywords when a new list is provided', async ({ client }) => {
+    const { token } = await loginAs(client, 'hr')
+    const category = await CategoryFactory.merge({ name: 'Lunch' }).create()
+    await CategoryKeyword.createMany([
+      { categoryId: category.id, name: 'old-keyword-1' },
+      { categoryId: category.id, name: 'old-keyword-2' },
+    ])
+
+    const response = await client
+      .patch(`${BASE_URL}/${category.id}`)
+      .header('Authorization', `Bearer ${token}`)
+      .json({ keywords: ['restaurant', 'food'] })
+
+    response.assertStatus(200)
+    const body = response.body()
+    response.assert!.sameMembers(body.keywords, ['restaurant', 'food'])
+  })
+
+  test('clears all keywords when empty array is provided', async ({ client }) => {
+    const { token } = await loginAs(client, 'hr')
+    const category = await CategoryFactory.merge({ name: 'Lunch' }).create()
+    await CategoryKeyword.createMany([
+      { categoryId: category.id, name: 'restaurant' },
+      { categoryId: category.id, name: 'food' },
+    ])
+
+    const response = await client
+      .patch(`${BASE_URL}/${category.id}`)
+      .header('Authorization', `Bearer ${token}`)
+      .json({ keywords: [] })
+
+    response.assertStatus(200)
+    response.assertBodyContains({ keywords: [] })
+  })
+
+  test('does not change keywords when keywords field is omitted', async ({ client }) => {
+    const { token } = await loginAs(client, 'hr')
+    const category = await CategoryFactory.merge({ name: 'Lunch' }).create()
+    await CategoryKeyword.createMany([
+      { categoryId: category.id, name: 'restaurant' },
+      { categoryId: category.id, name: 'food' },
+    ])
+
+    const response = await client
+      .patch(`${BASE_URL}/${category.id}`)
+      .header('Authorization', `Bearer ${token}`)
+      .json({ active: false })
+
+    response.assertStatus(200)
+    const body = response.body()
+    response.assert!.sameMembers(body.keywords, ['restaurant', 'food'])
   })
 
   test('returns 409 when updated name conflicts with another category', async ({ client }) => {

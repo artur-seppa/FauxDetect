@@ -31,6 +31,7 @@ docker compose up -d
 |---------|-----|
 | API | http://localhost:3333 |
 | Mailpit (email UI) | http://localhost:8025 |
+| Bull Board (queue UI) | http://localhost:9999/queues |
 
 ### 2. Backend setup
 
@@ -46,7 +47,26 @@ node ace serve --hmr
 
 The API will be available at `http://localhost:3333`.
 
-### 3. Running tests
+### 3. Start the queue worker
+
+The worker processes expense files in the background (Taggun OCR + fraud detection). Run it in a **separate terminal**:
+
+```bash
+cd backend
+npm run worker
+# or: node ace queue:listen
+```
+
+To listen on a specific queue only:
+
+```bash
+node ace queue:listen --queue=default
+```
+
+> The worker requires Redis to be running (`docker compose up -d`).  
+> Each uploaded expense starts as `processing`. The worker updates it to `pending`, `manual_review`, or `rejected` after analysis.
+
+### 4. Running tests
 
 Create the test database (first time only):
 

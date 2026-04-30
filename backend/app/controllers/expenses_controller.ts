@@ -1,11 +1,13 @@
 import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import drive from '@adonisjs/drive/services/main'
+import queue from '@rlanz/bull-queue/services/main'
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
 import { ulid } from 'ulidx'
 import Expense from '#models/expense'
 import ExpensePolicy from '#policies/expense_policy'
+import ProcessExpenseJob from '#jobs/process_expense_job'
 import { storeExpenseValidator, rejectExpenseValidator } from '#validators/expense_validator'
 
 export default class ExpensesController {
@@ -68,6 +70,8 @@ export default class ExpensesController {
       employeeDescription: data.employeeDescription ?? null,
       status: 'processing',
     })
+
+    await queue.dispatch(ProcessExpenseJob, { expenseId: expense.id }, { queueName: 'expenses' })
 
     return response.created(expense)
   }
