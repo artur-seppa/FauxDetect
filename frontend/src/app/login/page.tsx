@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useAuth } from '@/hooks/use-auth'
+import { useAuthContext } from '@/contexts/auth-context'
 
 const schema = z.object({
   email: z.string().email('E-mail inválido'),
@@ -17,6 +18,7 @@ type FormData = z.infer<typeof schema>
 export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuth()
+  const { refreshUser } = useAuthContext()
   const [error, setError] = useState<string | null>(null)
 
   const {
@@ -29,6 +31,7 @@ export default function LoginPage() {
     setError(null)
     try {
       const res = await login(data.email, data.password)
+      refreshUser()
       router.push(res.user.role === 'employee' ? '/dashboard' : '/hr/dashboard')
     } catch {
       setError('E-mail ou senha inválidos.')

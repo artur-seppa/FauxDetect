@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useAuth } from '@/hooks/use-auth'
+import { useAuthContext } from '@/contexts/auth-context'
 import { cn } from '@/lib/utils'
 
 const navLinks = [
@@ -12,7 +12,7 @@ const navLinks = [
 
 export default function EmployeeLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const { logout } = useAuth()
+  const { logout } = useAuthContext()
 
   return (
     <div className="flex min-h-screen flex-col">
