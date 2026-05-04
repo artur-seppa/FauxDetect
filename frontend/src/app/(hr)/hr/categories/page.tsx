@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, parseKeywords } from '@/lib/utils'
 import type { Category } from '@/lib/types'
 import { Drawer } from '@/components/drawer'
 import { ConfirmModal } from '@/components/confirm-modal'
@@ -18,14 +18,6 @@ const schema = z.object({
 })
 
 type FormData = z.infer<typeof schema>
-
-function parseKeywords(raw: string | undefined): string[] {
-  if (!raw) return []
-  return raw
-    .split(',')
-    .map((k) => k.trim())
-    .filter(Boolean)
-}
 
 export default function CategoriesPage() {
   const queryClient = useQueryClient()
@@ -212,8 +204,9 @@ export default function CategoriesPage() {
       <Drawer open={editTarget !== null} onClose={closeDrawer} title={drawerTitle}>
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Nome</label>
+            <label htmlFor="category-name" className="text-sm font-medium text-gray-700">Nome</label>
             <input
+              id="category-name"
               {...register('name')}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
@@ -221,8 +214,9 @@ export default function CategoriesPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Keywords</label>
+            <label htmlFor="category-keywords" className="text-sm font-medium text-gray-700">Keywords</label>
             <input
+              id="category-keywords"
               {...register('keywords')}
               placeholder="restaurante, comida, almoço"
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
@@ -231,8 +225,9 @@ export default function CategoriesPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Limite (R$)</label>
+            <label htmlFor="category-max-amount" className="text-sm font-medium text-gray-700">Limite (R$)</label>
             <input
+              id="category-max-amount"
               type="number"
               min="0"
               step="0.01"

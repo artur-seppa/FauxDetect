@@ -44,6 +44,7 @@ export function ConfirmModal({
         onClick={onCancel}
       />
       <div
+        data-testid="confirm-modal"
         className={cn(
           'relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl transition-all duration-200',
           open ? 'opacity-100 scale-100' : 'opacity-0 scale-95'

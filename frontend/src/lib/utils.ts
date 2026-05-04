@@ -14,3 +14,11 @@ export function formatDate(value: string | null): string {
   if (!value) return '—'
   return new Intl.DateTimeFormat('pt-BR').format(new Date(value))
 }
+
+export function parseKeywords(raw: string | undefined): string[] {
+  if (!raw) return []
+  return raw
+    .split(',')
+    .map((k) => k.trim())
+    .filter(Boolean)
+}
