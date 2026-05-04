@@ -39,25 +39,33 @@ function isHrRoute(pathname: string) {
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  // Always allow public routes and BFF proxy internals
-  if (isPublic(pathname) || pathname.startsWith('/api/proxy')) {
+  // BFF proxy internals always pass through
+  if (pathname.startsWith('/api/proxy')) {
     return NextResponse.next()
   }
 
   const token = req.cookies.get('token')?.value
   const user = getUserInfo(req)
 
+  // /login handled explicitly so authenticated users get redirected to role home
+  if (pathname === '/login') {
+    if (token && user) {
+      const url = req.nextUrl.clone()
+      url.pathname = ROLE_HOME[user.role]
+      return NextResponse.redirect(url)
+    }
+    return NextResponse.next()
+  }
+
+  // Other public routes (/api/auth/session) pass through without auth
+  if (isPublic(pathname)) {
+    return NextResponse.next()
+  }
+
   // Unauthenticated → redirect to login
   if (!token || !user) {
     const url = req.nextUrl.clone()
     url.pathname = '/login'
-    return NextResponse.redirect(url)
-  }
-
-  // Authenticated hitting /login → send to role home
-  if (pathname === '/login') {
-    const url = req.nextUrl.clone()
-    url.pathname = ROLE_HOME[user.role]
     return NextResponse.redirect(url)
   }
 

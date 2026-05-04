@@ -9,8 +9,8 @@ import { useAuth } from '@/hooks/use-auth'
 import { useAuthContext } from '@/contexts/auth-context'
 
 const schema = z.object({
-  email: z.string().email('E-mail inválido'),
-  password: z.string().min(6, 'Mínimo 6 caracteres'),
+  email: z.email({ error: 'E-mail inválido' }),
+  password: z.string().min(8, { error: 'Mínimo 8 caracteres' }),
 })
 
 type FormData = z.infer<typeof schema>
@@ -46,7 +46,7 @@ export default function LoginPage() {
           <p className="text-sm text-gray-500">Entre com sua conta</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
           <div className="space-y-1">
             <label className="text-sm font-medium text-gray-700" htmlFor="email">
               E-mail
