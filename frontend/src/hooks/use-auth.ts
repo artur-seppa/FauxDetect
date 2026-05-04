@@ -1,40 +1,46 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useCallback } from 'react'
-import { api } from '@/lib/api'
-import type { AuthResponse } from '@/lib/types'
+import Cookies from 'js-cookie'
+import type { AuthResponse, User } from '@/lib/types'
+
+export interface UserInfo {
+  id: number
+  name: string
+  role: User['role']
+}
+
+export function getStoredUserInfo(): UserInfo | null {
+  const raw = Cookies.get('user_info')
+  if (!raw) return null
+  try {
+    return JSON.parse(raw) as UserInfo
+  } catch {
+    return null
+  }
+}
 
 export function useAuth() {
-  const router = useRouter()
+  const login = useCallback(async (email: string, password: string): Promise<AuthResponse['user']> => {
+    const res = await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
 
-  const login = useCallback(async (email: string, password: string): Promise<AuthResponse> => {
-    const { data } = await api.post<AuthResponse>('/auth/login', { email, password })
-    localStorage.setItem('token', data.token)
-    localStorage.setItem('user', JSON.stringify(data.user))
-    return data
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.message ?? 'Credenciais inválidas.')
+    }
+
+    const data: { user: AuthResponse['user'] } = await res.json()
+    return data.user
   }, [])
 
   const logout = useCallback(async () => {
-    try {
-      await api.post('/auth/logout')
-    } finally {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      router.push('/login')
-    }
-  }, [router])
-
-  const getUser = useCallback(() => {
-    if (typeof window === 'undefined') return null
-    const raw = localStorage.getItem('user')
-    if (!raw) return null
-    try {
-      return JSON.parse(raw) as AuthResponse['user']
-    } catch {
-      return null
-    }
+    await fetch('/api/auth/session', { method: 'DELETE' }).catch(() => null)
+    window.location.href = '/login'
   }, [])
 
-  return { login, logout, getUser }
+  return { login, logout }
 }

@@ -47,7 +47,29 @@ node ace serve --hmr
 
 The API will be available at `http://localhost:3333`.
 
-### 3. Start the queue worker
+### 3. Frontend setup
+
+```bash
+cd frontend
+cp .env.local.example .env.local   # if applicable
+npm install
+npm run dev
+```
+
+The app will be available at `http://localhost:3000`.
+
+| Route | Description |
+|-------|-------------|
+| `/login` | Login page |
+| `/dashboard` | Employee dashboard |
+| `/expenses/new` | Submit new expense |
+| `/expenses/[id]` | Expense detail |
+| `/hr/dashboard` | HR dashboard |
+| `/hr/expenses` | HR expense review table |
+
+> Route protection is handled at the Edge via `src/proxy.ts`. Unauthenticated requests are redirected to `/login`; role isolation prevents employees from accessing HR routes and vice-versa.
+
+### 4. Start the queue worker
 
 The worker processes expense files in the background (Taggun OCR + fraud detection). Run it in a **separate terminal**:
 
@@ -66,22 +88,36 @@ node ace queue:listen --queue=default
 > The worker requires Redis to be running (`docker compose up -d`).  
 > Each uploaded expense starts as `processing`. The worker updates it to `pending`, `manual_review`, or `rejected` after analysis.
 
-### 4. Running tests
+### 5. Running tests
 
-Create the test database (first time only):
+**Backend** — create the test database (first time only):
 
 ```bash
 sudo docker exec fauxdetect-postgres createdb -U postgres fauxdetect_test
 ```
 
-Then run the test suite from the `backend` directory:
+Then run the suite from `backend/`:
 
 ```bash
 cd backend
 node ace test
 ```
 
-The test runner applies migrations automatically via `testUtils.db().migrate()`, so no manual setup is needed beyond creating the database.
+**Frontend** — unit tests (Vitest):
+
+```bash
+cd frontend
+npm test
+```
+
+**Frontend** — E2E tests (Playwright, requires the dev server running):
+
+```bash
+cd frontend
+npm run test:e2e
+```
+
+The test runner applies migrations automatically via `testUtils.db().migrate()`, so no manual backend setup is needed beyond creating the database.
 
 ### Test credentials (seeded)
 
@@ -121,5 +157,18 @@ faux-detect/
 │   └── start/
 │       ├── routes.ts
 │       └── kernel.ts
-└── frontend/               # Next.js (App Router) — coming soon
+└── frontend/               # Next.js 16 (App Router)
+    ├── src/
+    │   ├── app/
+    │   │   ├── (employee)/     # /dashboard, /expenses/new, /expenses/[id]
+    │   │   ├── (hr)/           # /hr/dashboard, /hr/expenses, /hr/expenses/[id]
+    │   │   ├── api/            # BFF proxy routes (/api/auth/session, /api/proxy/*)
+    │   │   └── login/
+    │   ├── components/         # StatusBadge, FraudSignalsCard, FileViewer, …
+    │   ├── contexts/           # AuthContext
+    │   ├── hooks/              # useAuth, useAuthContext
+    │   └── proxy.ts            # Edge middleware: route protection + role isolation
+    ├── __tests__/unit/         # Vitest unit tests (proxy logic, useAuth hook)
+    ├── e2e/                    # Playwright E2E tests (auth flows)
+    └── playwright.config.ts
 ```
