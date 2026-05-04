@@ -14,9 +14,18 @@ import { ConfirmModal } from '@/components/confirm-modal'
 const schema = z.object({
   name: z.string().min(1, { error: 'Nome obrigatório' }),
   maxAmount: z.string().optional(),
+  keywords: z.string().optional(),
 })
 
 type FormData = z.infer<typeof schema>
+
+function parseKeywords(raw: string | undefined): string[] {
+  if (!raw) return []
+  return raw
+    .split(',')
+    .map((k) => k.trim())
+    .filter(Boolean)
+}
 
 export default function CategoriesPage() {
   const queryClient = useQueryClient()
@@ -36,7 +45,7 @@ export default function CategoriesPage() {
   } = useForm<FormData>({ resolver: zodResolver(schema) })
 
   const createMutation = useMutation({
-    mutationFn: (data: { name: string; maxAmount: number | null }) =>
+    mutationFn: (data: { name: string; maxAmount: number | null; keywords: string[] }) =>
       api.post('/categories', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] })
@@ -45,8 +54,16 @@ export default function CategoriesPage() {
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, ...data }: { id: number; name: string; maxAmount: number | null; active: boolean }) =>
-      api.put(`/categories/${id}`, data),
+    mutationFn: ({
+      id,
+      ...data
+    }: {
+      id: number
+      name: string
+      maxAmount: number | null
+      active: boolean
+      keywords: string[]
+    }) => api.put(`/categories/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] })
       closeDrawer()
@@ -62,7 +79,7 @@ export default function CategoriesPage() {
   })
 
   function openCreate() {
-    reset({ name: '', maxAmount: '' })
+    reset({ name: '', maxAmount: '', keywords: '' })
     setEditTarget('new')
   }
 
@@ -70,6 +87,7 @@ export default function CategoriesPage() {
     reset({
       name: category.name,
       maxAmount: category.maxAmount != null ? String(category.maxAmount) : '',
+      keywords: category.keywords?.join(', ') ?? '',
     })
     setEditTarget(category)
   }
@@ -83,6 +101,7 @@ export default function CategoriesPage() {
     const payload = {
       name: data.name,
       maxAmount: data.maxAmount ? Number(data.maxAmount) : null,
+      keywords: parseKeywords(data.keywords),
     }
     if (editTarget === 'new') {
       await createMutation.mutateAsync(payload)
@@ -97,6 +116,7 @@ export default function CategoriesPage() {
       name: category.name,
       maxAmount: category.maxAmount,
       active: !category.active,
+      keywords: category.keywords ?? [],
     })
   }
 
@@ -126,6 +146,7 @@ export default function CategoriesPage() {
               <thead className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
                 <tr>
                   <th className="px-4 py-3">Nome</th>
+                  <th className="px-4 py-3">Keywords</th>
                   <th className="px-4 py-3">Limite</th>
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3"></th>
@@ -135,6 +156,22 @@ export default function CategoriesPage() {
                 {categories.map((category) => (
                   <tr key={category.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 font-medium">{category.name}</td>
+                    <td className="px-4 py-3">
+                      {category.keywords?.length ? (
+                        <div className="flex flex-wrap gap-1">
+                          {category.keywords.map((kw) => (
+                            <span
+                              key={kw}
+                              className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
+                            >
+                              {kw}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3">{formatCurrency(category.maxAmount)}</td>
                     <td className="px-4 py-3">
                       <button
@@ -148,20 +185,21 @@ export default function CategoriesPage() {
                         {category.active ? 'Ativa' : 'Inativa'}
                       </button>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => openEdit(category)}
-                        className="text-sm text-blue-600 hover:underline"
-                      >
-                        Editar
-                      </button>
-                      <span className="mx-2 text-gray-300">|</span>
-                      <button
-                        onClick={() => setDeleteTarget(category)}
-                        className="text-sm text-red-500 hover:underline"
-                      >
-                        Excluir
-                      </button>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => openEdit(category)}
+                          className="rounded-md px-2.5 py-1.5 text-sm font-semibold text-blue-600 ring-1 ring-inset ring-blue-300 hover:bg-blue-50"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => setDeleteTarget(category)}
+                          className="rounded-md px-2.5 py-1.5 text-sm font-semibold text-red-600 ring-1 ring-inset ring-red-300 hover:bg-red-50"
+                        >
+                          Excluir
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -180,6 +218,16 @@ export default function CategoriesPage() {
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
             {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">Keywords</label>
+            <input
+              {...register('keywords')}
+              placeholder="restaurante, comida, almoço"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+            />
+            <p className="text-xs text-gray-400">Separe as keywords por vírgula.</p>
           </div>
 
           <div className="space-y-1">
