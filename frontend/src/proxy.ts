@@ -36,7 +36,7 @@ function isHrRoute(pathname: string) {
   return HR_ROUTES.some((r) => pathname === r || pathname.startsWith(r + '/'))
 }
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   // Always allow public routes and BFF proxy internals
