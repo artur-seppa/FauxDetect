@@ -1,32 +1,5 @@
-import { test, expect, type BrowserContext } from '@playwright/test'
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const EMPLOYEE = { id: 1, name: 'John Employee', role: 'employee' }
-const HR = { id: 2, name: 'HR User', role: 'hr' }
-
-async function setAuthCookies(ctx: BrowserContext, user: typeof EMPLOYEE | typeof HR) {
-  await ctx.addCookies([
-    {
-      name: 'token',
-      value: 'mock-jwt-token',
-      domain: 'localhost',
-      path: '/',
-      httpOnly: true,
-      secure: false,
-      sameSite: 'Lax',
-    },
-    {
-      name: 'user_info',
-      value: JSON.stringify(user),
-      domain: 'localhost',
-      path: '/',
-      httpOnly: false,
-      secure: false,
-      sameSite: 'Lax',
-    },
-  ])
-}
+import { test, expect } from '@playwright/test'
+import { EMPLOYEE, HR, setAuthCookies } from './helpers'
 
 // ─── Route protection ─────────────────────────────────────────────────────────
 
