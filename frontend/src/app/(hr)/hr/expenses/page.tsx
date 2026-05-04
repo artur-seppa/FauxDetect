@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/lib/api'
-import type { Expense, PaginatedResponse } from '@/lib/types'
+import type { Expense } from '@/lib/types'
 import { StatusBadge } from '@/components/status-badge'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
@@ -24,7 +24,7 @@ export default function HrExpensesPage() {
     queryKey: ['hr-expenses', status],
     queryFn: () =>
       api
-        .get<PaginatedResponse<Expense>>('/expenses', { params: { status: status || undefined } })
+        .get<Expense[]>('/expenses', { params: { status: status || undefined } })
         .then((r) => r.data),
   })
 
@@ -58,7 +58,7 @@ export default function HrExpensesPage() {
 
       {isLoading ? (
         <p className="text-sm text-gray-500">Carregando…</p>
-      ) : !data?.data?.length ? (
+      ) : !data?.length ? (
         <p className="text-sm text-gray-500">Nenhuma despesa encontrada.</p>
       ) : (
         <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
@@ -76,13 +76,13 @@ export default function HrExpensesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {(data?.data ?? []).map((expense) => (
+              {(data ?? []).map((expense: Expense) => (
                 <tr key={expense.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">{expense.user?.name ?? '—'}</td>
                   <td className="px-4 py-3 font-medium">{expense.originalFilename}</td>
                   <td className="px-4 py-3">{formatCurrency(expense.extractedAmount)}</td>
                   <td className="px-4 py-3">{formatDate(expense.extractedDate)}</td>
-                  <td className="px-4 py-3">{expense.category?.name ?? '—'}</td>
+                  <td className="px-4 py-3">{(expense.selectedCategory ?? expense.category)?.name ?? '—'}</td>
                   <td className="px-4 py-3">
                     <span
                       className={

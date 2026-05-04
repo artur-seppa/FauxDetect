@@ -1,10 +1,10 @@
 import type { FraudSignals } from '@/lib/types'
 
 const signalLabels: Record<keyof FraudSignals, string> = {
-  duplicate_file: 'Arquivo duplicado',
-  amount_exceeds_category_limit: 'Valor excede limite da categoria',
-  low_ocr_confidence: 'Baixa confiança no OCR',
-  suspicious_words: 'Palavras suspeitas detectadas',
+  duplicateFile: 'Arquivo duplicado',
+  amountExceedsCategoryLimit: 'Valor excede limite da categoria',
+  lowOcrConfidence: 'Baixa confiança no OCR',
+  suspiciousWords: 'Palavras suspeitas detectadas',
 }
 
 interface FraudSignalsCardProps {

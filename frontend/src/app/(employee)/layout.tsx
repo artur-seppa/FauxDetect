@@ -5,10 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useAuthContext } from '@/contexts/auth-context'
 import { cn } from '@/lib/utils'
 
-const navLinks = [
-  { href: '/dashboard', label: 'Minhas Despesas' },
-  { href: '/expenses/new', label: 'Nova Despesa' },
-]
+const navLinks = [{ href: '/dashboard', label: 'Minhas Despesas' }]
 
 export default function EmployeeLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()

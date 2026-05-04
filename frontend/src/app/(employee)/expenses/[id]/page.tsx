@@ -24,12 +24,17 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard" className="text-sm text-blue-600 hover:underline">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-semibold">{expense.originalFilename}</h1>
+          <StatusBadge status={expense.status} />
+        </div>
+        <Link
+          href="/dashboard"
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
           ← Voltar
         </Link>
-        <h1 className="text-xl font-semibold">{expense.originalFilename}</h1>
-        <StatusBadge status={expense.status} />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -53,10 +58,14 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ id: st
                 <dt className="text-gray-500">Descrição</dt>
                 <dd className="max-w-[60%] text-right">{expense.extractedDescription ?? '—'}</dd>
               </div>
+              <div className="flex justify-between">
+                <dt className="text-gray-500">Categoria selecionada</dt>
+                <dd className="font-medium">{(expense.selectedCategory ?? expense.category)?.name ?? '—'}</dd>
+              </div>
             </dl>
           </div>
 
-          <CategoryMatchBadge match={expense.categoryMatch} categoryName={expense.category?.name} />
+          <CategoryMatchBadge match={expense.categoryMatch} categoryName={(expense.selectedCategory ?? expense.category)?.name} />
 
           {expense.fraudSignals && (
             <FraudSignalsCard signals={expense.fraudSignals} fraudScore={expense.fraudScore} />
@@ -69,10 +78,12 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ id: st
           )}
         </div>
 
-        <FileViewer
-          url={`${process.env.NEXT_PUBLIC_API_URL}/expenses/${expense.id}/file`}
-          filename={expense.originalFilename}
-        />
+        {expense.fileUrl && (
+          <FileViewer
+            url={`${process.env.NEXT_PUBLIC_BACKEND_URL}${expense.fileUrl}`}
+            filename={expense.originalFilename}
+          />
+        )}
       </div>
     </div>
   )
