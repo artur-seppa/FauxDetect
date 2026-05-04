@@ -58,7 +58,7 @@ export default function HrExpensesPage() {
 
       {isLoading ? (
         <p className="text-sm text-gray-500">Carregando…</p>
-      ) : !data?.data.length ? (
+      ) : !data?.data?.length ? (
         <p className="text-sm text-gray-500">Nenhuma despesa encontrada.</p>
       ) : (
         <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
@@ -76,7 +76,7 @@ export default function HrExpensesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {data.data.map((expense) => (
+              {(data?.data ?? []).map((expense) => (
                 <tr key={expense.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">{expense.user?.name ?? '—'}</td>
                   <td className="px-4 py-3 font-medium">{expense.originalFilename}</td>

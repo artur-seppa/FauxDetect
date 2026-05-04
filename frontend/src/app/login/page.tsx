@@ -42,13 +42,13 @@ export default function LoginPage() {
     <main className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-6 rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
         <div className="space-y-1 text-center">
-          <h1 className="text-2xl font-bold">FauxDetect</h1>
+          <h1 className="text-2xl font-bold text-gray-900">FauxDetect</h1>
           <p className="text-sm text-gray-500">Entre com sua conta</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1">
-            <label className="text-sm font-medium" htmlFor="email">
+            <label className="text-sm font-medium text-gray-700" htmlFor="email">
               E-mail
             </label>
             <input
@@ -56,13 +56,13 @@ export default function LoginPage() {
               type="email"
               autoComplete="email"
               {...register('email')}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
             {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium" htmlFor="password">
+            <label className="text-sm font-medium text-gray-700" htmlFor="password">
               Senha
             </label>
             <input
@@ -70,7 +70,7 @@ export default function LoginPage() {
               type="password"
               autoComplete="current-password"
               {...register('password')}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
             {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
           </div>
@@ -80,7 +80,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+            className="w-full rounded-lg bg-emerald-600 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
           >
             {isSubmitting ? 'Entrando…' : 'Entrar'}
           </button>
