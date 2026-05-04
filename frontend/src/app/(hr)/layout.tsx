@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 const navLinks = [
   { href: '/hr/dashboard', label: 'Dashboard' },
   { href: '/hr/expenses', label: 'Despesas' },
+  { href: '/hr/categories', label: 'Categorias' },
 ]
 
 export default function HrLayout({ children }: { children: React.ReactNode }) {

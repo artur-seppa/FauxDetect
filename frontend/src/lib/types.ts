@@ -15,6 +15,7 @@ export interface Category {
   name: string
   maxAmount: number | null
   active: boolean
+  keywords: string[]
 }
 
 export interface FraudSignals {
