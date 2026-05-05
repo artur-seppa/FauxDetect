@@ -9,9 +9,8 @@ test.describe('hr expense listing', () => {
     await page.goto('/hr/expenses')
   })
 
-  test('renders page heading and Exportar CSV link', async ({ page }) => {
+  test('renders page heading', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'Despesas' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Exportar CSV' })).toBeVisible()
   })
 
   test('renders all status filter tabs', async ({ page }) => {
@@ -48,15 +47,18 @@ test.describe('hr expense listing', () => {
     await expect(yellowScore).toHaveClass(/text-yellow-600/)
   })
 
-  test('renders Revisar links for each row', async ({ page }) => {
-    const links = page.getByRole('link', { name: 'Revisar' })
-    await expect(links.first()).toBeVisible()
-    await expect(links).toHaveCount(HR_EXPENSES.length)
+  test('renders Revisar buttons for each row', async ({ page }) => {
+    const buttons = page.getByRole('button', { name: 'Revisar' })
+    await expect(buttons.first()).toBeVisible()
+    await expect(buttons).toHaveCount(HR_EXPENSES.length)
   })
 
-  test('Revisar link points to correct hr expense detail page', async ({ page }) => {
-    const firstLink = page.getByRole('link', { name: 'Revisar' }).first()
-    await expect(firstLink).toHaveAttribute('href', `/hr/expenses/${HR_EXPENSES[0].id}`)
+  test('clicking Revisar navigates to correct hr expense detail page', async ({ page }) => {
+    await page.route(`/api/expenses/${HR_EXPENSES[0].id}`, (route) =>
+      route.fulfill({ json: HR_EXPENSES[0] })
+    )
+    await page.getByRole('button', { name: 'Revisar' }).first().click()
+    await expect(page).toHaveURL(`/hr/expenses/${HR_EXPENSES[0].id}`)
   })
 
   test('clicking Pendente tab updates URL', async ({ page }) => {

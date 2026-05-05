@@ -24,7 +24,7 @@ export interface MockExpense {
   fileUrl: string | null
   createdAt: string
   updatedAt: string
-  user?: { id: number; name: string; email: string }
+  user?: { id: number; fullName: string; email: string }
 }
 
 export const MOCK_CATEGORY = { id: 1, name: 'Almoço', maxAmount: 50, active: true, keywords: ['restaurante'] }
@@ -91,21 +91,21 @@ export const MOCK_MANUAL_REVIEW_EXPENSE: MockExpense = {
 export const HR_EXPENSES: MockExpense[] = [
   {
     ...MOCK_PENDING_EXPENSE,
-    user: { id: 1, name: 'John Employee', email: 'john@company.com' },
+    user: { id: 1, fullName: 'John Employee', email: 'john@company.com' },
   },
   {
     ...MOCK_REJECTED_EXPENSE,
     userId: 3,
-    user: { id: 3, name: 'Jane Smith', email: 'jane@company.com' },
+    user: { id: 3, fullName: 'Jane Smith', email: 'jane@company.com' },
   },
   {
     ...MOCK_MANUAL_REVIEW_EXPENSE,
     userId: 3,
-    user: { id: 3, name: 'Jane Smith', email: 'jane@company.com' },
+    user: { id: 3, fullName: 'Jane Smith', email: 'jane@company.com' },
   },
 ]
 
 export const HR_PENDING_EXPENSE: MockExpense = {
   ...MOCK_PENDING_EXPENSE,
-  user: { id: 1, name: 'John Employee', email: 'john@company.com' },
+  user: { id: 1, fullName: 'John Employee', email: 'john@company.com' },
 }

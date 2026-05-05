@@ -60,7 +60,7 @@ test.describe('hr expense detail — review actions', () => {
   test('shows Aprovar and Rejeitar buttons for manual_review expense', async ({ page }) => {
     const id = MOCK_MANUAL_REVIEW_EXPENSE.id
     await page.route(`/api/expenses/${id}`, (route) =>
-      route.fulfill({ json: { ...MOCK_MANUAL_REVIEW_EXPENSE, user: { id: 1, name: 'John Employee', email: 'john@company.com' } } })
+      route.fulfill({ json: { ...MOCK_MANUAL_REVIEW_EXPENSE, user: { id: 1, fullName: 'John Employee', email: 'john@company.com' } } })
     )
     await page.goto(`/hr/expenses/${id}`)
     await expect(page.getByRole('button', { name: 'Aprovar' })).toBeVisible()
@@ -78,7 +78,7 @@ test.describe('hr expense detail — review actions', () => {
   test('does not show action buttons for rejected expense', async ({ page }) => {
     const id = MOCK_REJECTED_EXPENSE.id
     await page.route(`/api/expenses/${id}`, (route) =>
-      route.fulfill({ json: { ...MOCK_REJECTED_EXPENSE, user: { id: 1, name: 'John Employee', email: 'john@company.com' } } })
+      route.fulfill({ json: { ...MOCK_REJECTED_EXPENSE, user: { id: 1, fullName: 'John Employee', email: 'john@company.com' } } })
     )
     await page.goto(`/hr/expenses/${id}`)
     await expect(page.getByRole('button', { name: 'Aprovar' })).not.toBeVisible()
