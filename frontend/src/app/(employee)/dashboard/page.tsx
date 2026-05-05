@@ -96,7 +96,10 @@ export default function EmployeeDashboardPage() {
                     <StatusBadge status={expense.status} />
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link href={`/expenses/${expense.id}`} className="text-blue-600 hover:underline">
+                    <Link
+                      href={`/expenses/${expense.id}`}
+                      className="rounded-md border border-blue-500 px-3 py-1 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-50"
+                    >
                       Ver
                     </Link>
                   </td>

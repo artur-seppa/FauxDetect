@@ -8,7 +8,6 @@ import type { Expense } from '@/lib/types'
 import { StatusBadge } from '@/components/status-badge'
 import { FraudSignalsCard } from '@/components/fraud-signals-card'
 import { CategoryMatchBadge } from '@/components/category-match-badge'
-import { FileViewer } from '@/components/file-viewer'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
 export default function ExpenseDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -29,40 +28,57 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ id: st
           <h1 className="text-xl font-semibold">{expense.originalFilename}</h1>
           <StatusBadge status={expense.status} />
         </div>
-        <Link
-          href="/dashboard"
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >
-          ← Voltar
-        </Link>
+        <div className="flex items-center gap-2">
+          {expense.fileUrl && (
+            <a
+              href={`${process.env.NEXT_PUBLIC_BACKEND_URL}${expense.fileUrl}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg border border-emerald-600 bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+            >
+              Ver Comprovante
+            </a>
+          )}
+          <Link
+            href="/dashboard"
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            ← Voltar
+          </Link>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="space-y-4">
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <h2 className="mb-3 font-semibold">Dados Extraídos</h2>
-            <dl className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <dt className="text-gray-500">Valor</dt>
-                <dd className="font-medium">{formatCurrency(expense.extractedAmount)}</dd>
+      <div className="space-y-4">
+          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+            <div className="border-b border-dashed border-gray-300 bg-gray-50 px-5 py-3 text-center">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Comprovante de Despesa</p>
+            </div>
+            <dl className="divide-y divide-dashed divide-gray-200 px-5 text-sm">
+              <div className="flex justify-between py-2.5">
+                <dt className="text-gray-500">Fornecedor</dt>
+                <dd className="font-medium">{expense.extractedVendor ?? '—'}</dd>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between py-2.5">
                 <dt className="text-gray-500">Data</dt>
                 <dd>{formatDate(expense.extractedDate)}</dd>
               </div>
-              <div className="flex justify-between">
-                <dt className="text-gray-500">Fornecedor</dt>
-                <dd>{expense.extractedVendor ?? '—'}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-gray-500">Descrição</dt>
-                <dd className="max-w-[60%] text-right">{expense.extractedDescription ?? '—'}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-gray-500">Categoria selecionada</dt>
+              <div className="flex justify-between py-2.5">
+                <dt className="text-gray-500">Categoria</dt>
                 <dd className="font-medium">{(expense.selectedCategory ?? expense.category)?.name ?? '—'}</dd>
               </div>
+              {expense.extractedDescription && (
+                <div className="flex justify-between py-2.5">
+                  <dt className="text-gray-500">Descrição</dt>
+                  <dd className="max-w-[60%] text-right text-gray-700">{expense.extractedDescription}</dd>
+                </div>
+              )}
             </dl>
+            <div className="border-t-2 border-dashed border-gray-300 bg-gray-50 px-5 py-3">
+              <div className="flex justify-between text-sm font-bold text-gray-800">
+                <span>TOTAL</span>
+                <span>{formatCurrency(expense.extractedAmount)}</span>
+              </div>
+            </div>
           </div>
 
           <CategoryMatchBadge match={expense.categoryMatch} categoryName={(expense.selectedCategory ?? expense.category)?.name} />
@@ -76,15 +92,9 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ id: st
               <strong>Motivo da Rejeição:</strong> {expense.rejectionReason}
             </div>
           )}
-        </div>
 
-        {expense.fileUrl && (
-          <FileViewer
-            url={`${process.env.NEXT_PUBLIC_BACKEND_URL}${expense.fileUrl}`}
-            filename={expense.originalFilename}
-          />
-        )}
-      </div>
+
+        </div>
     </div>
   )
 }

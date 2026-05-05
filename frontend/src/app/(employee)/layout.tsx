@@ -14,9 +14,9 @@ export default function EmployeeLayout({ children }: { children: React.ReactNode
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b border-gray-200 bg-white px-6 py-3">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
+        <div className="mx-auto grid max-w-5xl grid-cols-3 items-center">
           <span className="font-bold text-emerald-700">FauxDetect</span>
-          <nav className="flex gap-4">
+          <nav className="flex justify-center gap-4">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -30,12 +30,14 @@ export default function EmployeeLayout({ children }: { children: React.ReactNode
               </Link>
             ))}
           </nav>
-          <button
-            onClick={() => logout()}
-            className="text-sm text-gray-500 hover:text-gray-900"
-          >
-            Sair
-          </button>
+          <div className="flex justify-end">
+            <button
+              onClick={() => logout()}
+              className="text-sm text-gray-500 hover:text-gray-900"
+            >
+              Sair
+            </button>
+          </div>
         </div>
       </header>
       <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-8">{children}</main>
