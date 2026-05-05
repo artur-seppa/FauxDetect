@@ -3,7 +3,7 @@ import { EMPLOYEE, setAuthCookies } from '../helpers'
 import { MOCK_PENDING_EXPENSE, MOCK_REJECTED_EXPENSE, MOCK_MANUAL_REVIEW_EXPENSE } from './helpers'
 
 test.describe('employee expense detail', () => {
-  test.beforeEach(async ({ page, context }) => {
+  test.beforeEach(async ({ context }) => {
     await setAuthCookies(context, EMPLOYEE)
   })
 
@@ -41,7 +41,7 @@ test.describe('employee expense detail', () => {
       route.fulfill({ json: MOCK_PENDING_EXPENSE })
     )
     await page.goto(`/expenses/${MOCK_PENDING_EXPENSE.id}`)
-    await expect(page.getByText('Categoria selecionada')).toBeVisible()
+    await expect(page.getByText('Categoria', { exact: true })).toBeVisible()
     await expect(page.getByText('Almoço', { exact: true })).toBeVisible()
   })
 
@@ -86,6 +86,16 @@ test.describe('employee expense detail', () => {
     )
     await page.goto(`/expenses/${MOCK_PENDING_EXPENSE.id}`)
     await expect(page.getByText('Motivo da Rejeição:')).not.toBeVisible()
+  })
+
+  test('renders Ver Comprovante link opening in new tab', async ({ page }) => {
+    await page.route(`/api/expenses/${MOCK_PENDING_EXPENSE.id}`, (route) =>
+      route.fulfill({ json: MOCK_PENDING_EXPENSE })
+    )
+    await page.goto(`/expenses/${MOCK_PENDING_EXPENSE.id}`)
+    const btn = page.getByRole('link', { name: 'Ver Comprovante' })
+    await expect(btn).toBeVisible()
+    await expect(btn).toHaveAttribute('target', '_blank')
   })
 
   test('Voltar link navigates back to dashboard', async ({ page }) => {

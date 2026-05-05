@@ -72,7 +72,7 @@ describe('FraudSignalsCard — fraud score color', () => {
   })
 })
 
-describe('FraudSignalsCard — signal icons and label colors', () => {
+describe('FraudSignalsCard — signal badges and label colors', () => {
   test('active signal renders red label', () => {
     render(<FraudSignalsCard signals={{ ...NO_SIGNALS, duplicateFile: true }} fraudScore={50} />)
     const label = screen.getByText('Arquivo duplicado')
@@ -85,7 +85,7 @@ describe('FraudSignalsCard — signal icons and label colors', () => {
     expect(label.className).toContain('text-gray-500')
   })
 
-  test('active signal renders 🔴 icon', () => {
+  test('active signal renders "Detectado" badge', () => {
     const { container } = render(
       <FraudSignalsCard signals={{ ...NO_SIGNALS, suspiciousWords: true }} fraudScore={10} />
     )
@@ -93,13 +93,13 @@ describe('FraudSignalsCard — signal icons and label colors', () => {
     const suspiciousItem = Array.from(items).find((li) =>
       li.textContent?.includes('Palavras suspeitas detectadas')
     )
-    expect(suspiciousItem?.textContent).toContain('🔴')
+    expect(suspiciousItem?.textContent).toContain('Detectado')
   })
 
-  test('inactive signal renders 🟢 icon', () => {
+  test('inactive signal renders "OK" badge', () => {
     const { container } = render(<FraudSignalsCard signals={NO_SIGNALS} fraudScore={0} />)
     const items = container.querySelectorAll('li')
     expect(items.length).toBe(4)
-    items.forEach((li) => expect(li.textContent).toContain('🟢'))
+    items.forEach((li) => expect(li.textContent).toContain('OK'))
   })
 })
