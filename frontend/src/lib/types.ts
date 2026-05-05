@@ -5,7 +5,7 @@ export type ExpenseStatus = 'processing' | 'pending' | 'approved' | 'rejected' |
 export interface User {
   id: number
   email: string
-  name: string
+  fullName: string
   role: Role
   department: string | null
 }

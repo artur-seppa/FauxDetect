@@ -10,8 +10,9 @@ import ExpensePolicy from '#policies/expense_policy'
 import ProcessExpenseJob from '#jobs/process_expense_job'
 import { storeExpenseValidator, rejectExpenseValidator } from '#validators/expense_validator'
 
+
 export default class ExpensesController {
-  async index({ auth, response }: HttpContext) {
+  async index({ auth, request, response }: HttpContext) {
     const user = auth.user!
 
     const query = Expense.query()
@@ -21,6 +22,11 @@ export default class ExpensesController {
 
     if (user.role === 'employee') {
       query.where('user_id', user.id)
+    }
+
+    const status = request.input('status')
+    if (status) {
+      query.where('status', status)
     }
 
     const expenses = await query
@@ -121,5 +127,31 @@ export default class ExpensesController {
     await expense.save()
 
     return response.ok(expense)
+  }
+
+  async dashboard({ response }: HttpContext) {
+    const today = DateTime.now().toISODate()
+
+    const [pending, manualReview, approvedToday, rejectedToday] = await Promise.all([
+      Expense.query().where('status', 'pending').count('* as total').first(),
+      Expense.query().where('status', 'manual_review').count('* as total').first(),
+      Expense.query()
+        .where('status', 'approved')
+        .whereRaw('DATE(approved_at) = ?', [today])
+        .count('* as total')
+        .first(),
+      Expense.query()
+        .where('status', 'rejected')
+        .whereRaw('DATE(updated_at) = ?', [today])
+        .count('* as total')
+        .first(),
+    ])
+
+    return response.ok({
+      pending: Number(pending?.$extras.total ?? 0),
+      manualReview: Number(manualReview?.$extras.total ?? 0),
+      approvedToday: Number(approvedToday?.$extras.total ?? 0),
+      rejectedToday: Number(rejectedToday?.$extras.total ?? 0),
+    })
   }
 }

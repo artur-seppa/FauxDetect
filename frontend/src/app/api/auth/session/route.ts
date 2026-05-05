@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   // user_info não httpOnly — apenas dados de exibição (nome, role)
   response.cookies.set(
     'user_info',
-    JSON.stringify({ id: data.user.id, name: data.user.name, role: data.user.role }),
+    JSON.stringify({ id: data.user.id, fullName: data.user.fullName, role: data.user.role }),
     { ...COOKIE_OPTS, httpOnly: false, maxAge: 60 * 60 * 24 * 7 }
   )
 
