@@ -8,6 +8,7 @@ test.describe('employee expense listing', () => {
     await page.route('/api/expenses', (route) =>
       route.fulfill({ json: [MOCK_PENDING_EXPENSE, MOCK_REJECTED_EXPENSE] })
     )
+    await page.route('/api/categories', (route) => route.fulfill({ json: [] }))
     await page.goto('/dashboard')
   })
 
@@ -41,6 +42,7 @@ test.describe('employee listing — empty state', () => {
   test('shows empty message when no expenses exist', async ({ page, context }) => {
     await setAuthCookies(context, EMPLOYEE)
     await page.route('/api/expenses', (route) => route.fulfill({ json: [] }))
+    await page.route('/api/categories', (route) => route.fulfill({ json: [] }))
     await page.goto('/dashboard')
     await expect(page.getByText('Nenhuma despesa encontrada.')).toBeVisible()
   })
