@@ -1,10 +1,10 @@
 import type { FraudSignals } from '@/lib/types'
 
 const signalLabels: Record<keyof FraudSignals, string> = {
-  duplicate_file: 'Arquivo duplicado',
-  amount_exceeds_category_limit: 'Valor excede limite da categoria',
-  low_ocr_confidence: 'Baixa confiança no OCR',
-  suspicious_words: 'Palavras suspeitas detectadas',
+  duplicateFile: 'Arquivo duplicado',
+  amountExceedsCategoryLimit: 'Valor excede limite da categoria',
+  lowOcrConfidence: 'Baixa confiança no OCR',
+  suspiciousWords: 'Palavras suspeitas detectadas',
 }
 
 interface FraudSignalsCardProps {
@@ -29,12 +29,25 @@ export function FraudSignalsCard({ signals, fraudScore }: FraudSignalsCardProps)
           Score: {fraudScore}/100
         </span>
       </div>
-      <ul className="space-y-2">
+      <ul className="space-y-1.5">
         {(Object.keys(signals) as Array<keyof FraudSignals>).map((key) => (
-          <li key={key} className="flex items-center gap-2 text-sm">
-            <span>{signals[key] ? '🔴' : '🟢'}</span>
-            <span className={signals[key] ? 'text-red-700' : 'text-gray-500'}>
+          <li
+            key={key}
+            className={`flex items-center justify-between rounded-md px-3 py-2 text-sm ${
+              signals[key] ? 'bg-red-50' : 'bg-gray-50'
+            }`}
+          >
+            <span className={signals[key] ? 'font-medium text-red-700' : 'text-gray-500'}>
               {signalLabels[key]}
+            </span>
+            <span
+              className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                signals[key]
+                  ? 'bg-red-100 text-red-700'
+                  : 'bg-green-100 text-green-700'
+              }`}
+            >
+              {signals[key] ? 'Detectado' : 'OK'}
             </span>
           </li>
         ))}

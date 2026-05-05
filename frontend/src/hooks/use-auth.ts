@@ -6,7 +6,7 @@ import type { AuthResponse, User } from '@/lib/types'
 
 export interface UserInfo {
   id: number
-  name: string
+  fullName: string
   role: User['role']
 }
 

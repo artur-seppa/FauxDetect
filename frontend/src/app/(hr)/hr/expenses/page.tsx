@@ -1,10 +1,10 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/lib/api'
-import type { Expense, PaginatedResponse } from '@/lib/types'
+import type { Expense } from '@/lib/types'
 import { StatusBadge } from '@/components/status-badge'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
@@ -18,27 +18,20 @@ const STATUS_OPTIONS = [
 
 export default function HrExpensesPage() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const status = searchParams.get('status') ?? ''
 
   const { data, isLoading } = useQuery({
     queryKey: ['hr-expenses', status],
     queryFn: () =>
       api
-        .get<PaginatedResponse<Expense>>('/expenses', { params: { status: status || undefined } })
+        .get<Expense[]>('/expenses', { params: { status: status || undefined } })
         .then((r) => r.data),
   })
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Despesas</h1>
-        <a
-          href={`${process.env.NEXT_PUBLIC_API_URL}/hr/export/csv`}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >
-          Exportar CSV
-        </a>
-      </div>
+      <h1 className="text-xl font-semibold">Despesas</h1>
 
       <div className="flex gap-2">
         {STATUS_OPTIONS.map((opt) => (
@@ -58,7 +51,7 @@ export default function HrExpensesPage() {
 
       {isLoading ? (
         <p className="text-sm text-gray-500">Carregando…</p>
-      ) : !data?.data?.length ? (
+      ) : !data?.length ? (
         <p className="text-sm text-gray-500">Nenhuma despesa encontrada.</p>
       ) : (
         <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
@@ -76,13 +69,13 @@ export default function HrExpensesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {(data?.data ?? []).map((expense) => (
+              {(data ?? []).map((expense: Expense) => (
                 <tr key={expense.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">{expense.user?.name ?? '—'}</td>
+                  <td className="px-4 py-3">{expense.user?.fullName ?? '—'}</td>
                   <td className="px-4 py-3 font-medium">{expense.originalFilename}</td>
                   <td className="px-4 py-3">{formatCurrency(expense.extractedAmount)}</td>
                   <td className="px-4 py-3">{formatDate(expense.extractedDate)}</td>
-                  <td className="px-4 py-3">{expense.category?.name ?? '—'}</td>
+                  <td className="px-4 py-3">{(expense.selectedCategory ?? expense.category)?.name ?? '—'}</td>
                   <td className="px-4 py-3">
                     <span
                       className={
@@ -100,9 +93,12 @@ export default function HrExpensesPage() {
                     <StatusBadge status={expense.status} />
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link href={`/hr/expenses/${expense.id}`} className="text-blue-600 hover:underline">
+                    <button
+                      onClick={() => router.push(`/hr/expenses/${expense.id}`)}
+                      className="rounded-lg border border-emerald-600 px-3 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
+                    >
                       Revisar
-                    </Link>
+                    </button>
                   </td>
                 </tr>
               ))}

@@ -27,6 +27,7 @@ router.group(() => {
 router.group(() => {
   router.get('/', [ExpensesController, 'index'])
   router.post('/', [ExpensesController, 'store'])
+  router.get('/dashboard', [ExpensesController, 'dashboard'])
   router.get('/:id', [ExpensesController, 'show'])
   router.patch('/:id/approve', [ExpensesController, 'approve'])
   router.patch('/:id/reject', [ExpensesController, 'reject'])
