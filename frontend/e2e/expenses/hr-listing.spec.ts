@@ -32,9 +32,9 @@ test.describe('hr expense listing', () => {
   })
 
   test('renders status badges for each expense', async ({ page }) => {
-    await expect(page.getByText('Pendente')).toBeVisible()
-    await expect(page.getByText('Rejeitado')).toBeVisible()
-    await expect(page.getByText('Revisão Manual')).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Pendente' })).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Rejeitado' })).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Revisão Manual' })).toBeVisible()
   })
 
   test('renders fraud score with green color for low score', async ({ page }) => {

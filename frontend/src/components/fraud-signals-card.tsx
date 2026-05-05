@@ -1,10 +1,11 @@
-import type { FraudSignals } from '@/lib/types'
+import type { FraudSignals, SignalKey } from '@/lib/types'
 
-const signalLabels: Record<keyof FraudSignals, string> = {
-  duplicateFile: 'Arquivo duplicado',
-  amountExceedsCategoryLimit: 'Valor excede limite da categoria',
+const SIGNAL_KEYS: SignalKey[] = ['lowOcrConfidence', 'suspiciousWords', 'handwrittenReceipt']
+
+const signalLabels: Record<SignalKey, string> = {
   lowOcrConfidence: 'Baixa confiança no OCR',
   suspiciousWords: 'Palavras suspeitas detectadas',
+  handwrittenReceipt: 'Comprovante manuscrito',
 }
 
 interface FraudSignalsCardProps {
@@ -30,27 +31,32 @@ export function FraudSignalsCard({ signals, fraudScore }: FraudSignalsCardProps)
         </span>
       </div>
       <ul className="space-y-1.5">
-        {(Object.keys(signals) as Array<keyof FraudSignals>).map((key) => (
-          <li
-            key={key}
-            className={`flex items-center justify-between rounded-md px-3 py-2 text-sm ${
-              signals[key] ? 'bg-red-50' : 'bg-gray-50'
-            }`}
-          >
-            <span className={signals[key] ? 'font-medium text-red-700' : 'text-gray-500'}>
-              {signalLabels[key]}
-            </span>
-            <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                signals[key]
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-green-100 text-green-700'
+        {SIGNAL_KEYS.map((key) => {
+          const triggered = signals[key] as boolean
+          const label =
+            key === 'lowOcrConfidence' && signals.ocrConfidenceValue != null
+              ? `${signalLabels[key]} (${signals.ocrConfidenceValue.toFixed(0)}%)`
+              : signalLabels[key]
+          return (
+            <li
+              key={key}
+              className={`flex items-center justify-between rounded-md px-3 py-2 text-sm ${
+                triggered ? 'bg-red-50' : 'bg-gray-50'
               }`}
             >
-              {signals[key] ? 'Detectado' : 'OK'}
-            </span>
-          </li>
-        ))}
+              <span className={triggered ? 'font-medium text-red-700' : 'text-gray-500'}>
+                {label}
+              </span>
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                  triggered ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                }`}
+              >
+                {triggered ? 'Detectado' : 'OK'}
+              </span>
+            </li>
+          )
+        })}
       </ul>
     </div>
   )

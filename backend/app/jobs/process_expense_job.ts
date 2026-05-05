@@ -33,6 +33,26 @@ export default class ProcessExpenseJob extends Job {
       hash !== expense.fileHash &&
       (await Expense.query().where('file_hash', hash).whereNot('id', expense.id).first()) !== null
 
+    if (isDuplicate) {
+      await expense
+        .merge({
+          fileHash: hash,
+          status: 'rejected',
+          rejectionReason: 'Arquivo duplicado: já existe uma despesa com este comprovante.',
+        })
+        .save()
+      await queue.dispatch(
+        SendEmailJob,
+        {
+          to: expense.user.email,
+          expenseId: expense.id,
+          reason: 'Arquivo duplicado: já existe uma despesa com este comprovante.',
+        },
+        { queueName: 'emails' }
+      )
+      return
+    }
+
     const mimeType = this.#resolveMimeType(expense.originalFilename)
     const ocr = await new TaggunOcrService().process(buffer, mimeType)
 
@@ -41,11 +61,12 @@ export default class ProcessExpenseJob extends Job {
       ? categories.find((c) => c.id === expense.selectedCategoryId) ?? null
       : null
 
-    const fraud = new FraudDetectorService().analyze(ocr, selectedCategory, isDuplicate)
-    const categoryMatch = new CategoryMatcherService().match(
+    const fraud = new FraudDetectorService().analyze(ocr)
+    const category = new CategoryMatcherService().analyze(
       selectedCategory,
       ocr.extractedVendor,
-      ocr.extractedDescription
+      ocr.extractedDescription,
+      ocr.extractedAmount
     )
 
     await expense
@@ -58,7 +79,9 @@ export default class ProcessExpenseJob extends Job {
         fraudSignals: fraud.signals,
         fraudScore: fraud.score,
         fraudDetails: fraud.details,
-        categoryMatch,
+        categoryMatch: category.match,
+        categoryExceedsLimit: category.exceedsLimit,
+        categoryExceedsLimitDetail: category.exceedsLimitDetail,
         status: fraud.status,
         rejectionReason: fraud.status === 'rejected' ? fraud.details : null,
       })

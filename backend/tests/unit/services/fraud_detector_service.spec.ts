@@ -11,85 +11,116 @@ const baseOcr: OcrResult = {
   extractedDescription: 'Lunch at Cafe Brasil',
 }
 
-const fakeCategory = (maxAmount: number | null) =>
-  ({ name: 'Lunch', maxAmount, active: true }) as any
-
 test.group('FraudDetectorService', () => {
   test('returns pending when no fraud signals', ({ assert }) => {
-    const result = new FraudDetectorService().analyze(baseOcr, null, false)
+    const result = new FraudDetectorService().analyze(baseOcr)
 
     assert.equal(result.status, 'pending')
     assert.equal(result.score, 0)
-    assert.isFalse(result.signals.duplicateFile)
     assert.isFalse(result.signals.lowOcrConfidence)
     assert.isFalse(result.signals.suspiciousWords)
-    assert.isFalse(result.signals.amountExceedsCategoryLimit)
+    assert.isFalse(result.signals.handwrittenReceipt)
   })
 
-  test('adds 50 points for duplicate file', ({ assert }) => {
-    const result = new FraudDetectorService().analyze(baseOcr, null, true)
+  test('adds 40 points for low OCR confidence', ({ assert }) => {
+    const ocr = { ...baseOcr, confidence: 60 }
+    const result = new FraudDetectorService().analyze(ocr)
 
-    assert.isTrue(result.signals.duplicateFile)
-    assert.equal(result.score, 50)
+    assert.isTrue(result.signals.lowOcrConfidence)
+    assert.equal(result.score, 40)
     assert.equal(result.status, 'manual_review')
   })
 
-  test('adds 15 points for low OCR confidence', ({ assert }) => {
-    const ocr = { ...baseOcr, confidence: 60 }
-    const result = new FraudDetectorService().analyze(ocr, null, false)
+  test('stores ocrConfidenceValue in signals', ({ assert }) => {
+    const ocr = { ...baseOcr, confidence: 67 }
+    const result = new FraudDetectorService().analyze(ocr)
 
-    assert.isTrue(result.signals.lowOcrConfidence)
-    assert.equal(result.score, 15)
+    assert.equal(result.signals.ocrConfidenceValue, 67)
   })
 
-  test('adds 10 points for suspicious words in raw text', ({ assert }) => {
+  test('adds 20 points for suspicious words in raw text', ({ assert }) => {
     const ocr = { ...baseOcr, rawText: 'This is a test receipt' }
-    const result = new FraudDetectorService().analyze(ocr, null, false)
+    const result = new FraudDetectorService().analyze(ocr)
 
     assert.isTrue(result.signals.suspiciousWords)
-    assert.equal(result.score, 10)
-  })
-
-  test('adds 20 points when amount exceeds category limit', ({ assert }) => {
-    const ocr = { ...baseOcr, extractedAmount: 150 }
-    const result = new FraudDetectorService().analyze(ocr, fakeCategory(100), false)
-
-    assert.isTrue(result.signals.amountExceedsCategoryLimit)
     assert.equal(result.score, 20)
+    assert.equal(result.status, 'pending')
   })
 
-  test('does not flag amount when category has no limit', ({ assert }) => {
-    const ocr = { ...baseOcr, extractedAmount: 9999 }
-    const result = new FraudDetectorService().analyze(ocr, fakeCategory(null), false)
+  test('detects handwritten receipt when confidence is moderate and text is long enough', ({ assert }) => {
+    const ocr = {
+      ...baseOcr,
+      confidence: 71,
+      rawText: 'one two three four five six seven eight nine ten',
+    }
+    const result = new FraudDetectorService().analyze(ocr)
 
-    assert.isFalse(result.signals.amountExceedsCategoryLimit)
+    assert.isTrue(result.signals.handwrittenReceipt)
+  })
+
+  test('adds 40 points for handwritten receipt', ({ assert }) => {
+    const ocr = {
+      ...baseOcr,
+      confidence: 71, // above lowOcrConfidence threshold (70) but inside handwritten range (< 72)
+      rawText: 'one two three four five six seven eight nine ten',
+    }
+    const result = new FraudDetectorService().analyze(ocr)
+
+    assert.isTrue(result.signals.handwrittenReceipt)
+    assert.isFalse(result.signals.lowOcrConfidence)
+    assert.equal(result.score, 40)
+    assert.equal(result.status, 'manual_review')
+  })
+
+  test('does not flag handwritten receipt when confidence is high', ({ assert }) => {
+    const result = new FraudDetectorService().analyze({ ...baseOcr, confidence: 85 })
+
+    assert.isFalse(result.signals.handwrittenReceipt)
+  })
+
+  test('does not flag handwritten receipt when text is too short', ({ assert }) => {
+    const ocr = { ...baseOcr, confidence: 55, rawText: 'one two three' }
+    const result = new FraudDetectorService().analyze(ocr)
+
+    assert.isFalse(result.signals.handwrittenReceipt)
+  })
+
+  test('uses provider isHandwritten flag when present', ({ assert }) => {
+    const ocr = { ...baseOcr, providerFraud: { isHandwritten: true } }
+    const result = new FraudDetectorService().analyze(ocr)
+
+    assert.isTrue(result.signals.handwrittenReceipt)
   })
 
   test('returns rejected when score >= 70', ({ assert }) => {
-    const ocr = { ...baseOcr, confidence: 60, rawText: 'test receipt fake' }
-    const result = new FraudDetectorService().analyze(ocr, null, true)
+    const ocr = {
+      ...baseOcr,
+      confidence: 55,
+      rawText: 'one two three four five six seven eight nine test fake',
+    }
+    const result = new FraudDetectorService().analyze(ocr)
 
     assert.isAtLeast(result.score, 70)
     assert.equal(result.status, 'rejected')
   })
 
   test('returns manual_review when score is between 40 and 69', ({ assert }) => {
-    const result = new FraudDetectorService().analyze(baseOcr, null, true)
+    const ocr = { ...baseOcr, confidence: 60 }
+    const result = new FraudDetectorService().analyze(ocr)
 
-    assert.equal(result.score, 50)
+    assert.equal(result.score, 40)
     assert.equal(result.status, 'manual_review')
   })
 
   test('details string lists all triggered signals', ({ assert }) => {
     const ocr = { ...baseOcr, confidence: 60 }
-    const result = new FraudDetectorService().analyze(ocr, null, true)
+    const result = new FraudDetectorService().analyze(ocr)
 
-    assert.include(result.details, 'duplicate file')
     assert.include(result.details, 'low OCR confidence')
   })
 
   test('details string says no fraud signals when score is zero', ({ assert }) => {
-    const result = new FraudDetectorService().analyze(baseOcr, null, false)
+    const result = new FraudDetectorService().analyze(baseOcr)
 
     assert.equal(result.details, 'no fraud signals detected')
   })

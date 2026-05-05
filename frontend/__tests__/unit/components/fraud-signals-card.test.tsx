@@ -6,26 +6,25 @@ afterEach(cleanup)
 import type { FraudSignals } from '@/lib/types'
 
 const NO_SIGNALS: FraudSignals = {
-  duplicateFile: false,
-  amountExceedsCategoryLimit: false,
   lowOcrConfidence: false,
+  ocrConfidenceValue: 90,
   suspiciousWords: false,
+  handwrittenReceipt: false,
 }
 
 const ALL_SIGNALS: FraudSignals = {
-  duplicateFile: true,
-  amountExceedsCategoryLimit: true,
   lowOcrConfidence: true,
+  ocrConfidenceValue: 45,
   suspiciousWords: true,
+  handwrittenReceipt: true,
 }
 
 describe('FraudSignalsCard — labels', () => {
-  test('renders all four signal labels', () => {
+  test('renders all three signal labels', () => {
     render(<FraudSignalsCard signals={NO_SIGNALS} fraudScore={0} />)
-    expect(screen.getByText('Arquivo duplicado')).toBeDefined()
-    expect(screen.getByText('Valor excede limite da categoria')).toBeDefined()
-    expect(screen.getByText('Baixa confiança no OCR')).toBeDefined()
+    expect(screen.getByText(/Baixa confiança no OCR/)).toBeDefined()
     expect(screen.getByText('Palavras suspeitas detectadas')).toBeDefined()
+    expect(screen.getByText('Comprovante manuscrito')).toBeDefined()
   })
 
   test('renders card heading', () => {
@@ -74,20 +73,20 @@ describe('FraudSignalsCard — fraud score color', () => {
 
 describe('FraudSignalsCard — signal badges and label colors', () => {
   test('active signal renders red label', () => {
-    render(<FraudSignalsCard signals={{ ...NO_SIGNALS, duplicateFile: true }} fraudScore={50} />)
-    const label = screen.getByText('Arquivo duplicado')
+    render(<FraudSignalsCard signals={{ ...NO_SIGNALS, suspiciousWords: true }} fraudScore={20} />)
+    const label = screen.getByText('Palavras suspeitas detectadas')
     expect(label.className).toContain('text-red-700')
   })
 
   test('inactive signal renders gray label', () => {
     render(<FraudSignalsCard signals={NO_SIGNALS} fraudScore={0} />)
-    const label = screen.getByText('Arquivo duplicado')
+    const label = screen.getByText('Palavras suspeitas detectadas')
     expect(label.className).toContain('text-gray-500')
   })
 
   test('active signal renders "Detectado" badge', () => {
     const { container } = render(
-      <FraudSignalsCard signals={{ ...NO_SIGNALS, suspiciousWords: true }} fraudScore={10} />
+      <FraudSignalsCard signals={{ ...NO_SIGNALS, suspiciousWords: true }} fraudScore={20} />
     )
     const items = container.querySelectorAll('li')
     const suspiciousItem = Array.from(items).find((li) =>
@@ -99,7 +98,7 @@ describe('FraudSignalsCard — signal badges and label colors', () => {
   test('inactive signal renders "OK" badge', () => {
     const { container } = render(<FraudSignalsCard signals={NO_SIGNALS} fraudScore={0} />)
     const items = container.querySelectorAll('li')
-    expect(items.length).toBe(4)
+    expect(items.length).toBe(3)
     items.forEach((li) => expect(li.textContent).toContain('OK'))
   })
 })

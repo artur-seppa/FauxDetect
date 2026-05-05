@@ -7,11 +7,13 @@ import Category from '#models/category'
 
 export type ExpenseStatus = 'processing' | 'pending' | 'approved' | 'rejected' | 'manual_review'
 
+export type SignalKey = 'lowOcrConfidence' | 'suspiciousWords' | 'handwrittenReceipt'
+
 export type FraudSignals = {
-  duplicateFile: boolean
   lowOcrConfidence: boolean
+  ocrConfidenceValue: number
   suspiciousWords: boolean
-  amountExceedsCategoryLimit: boolean
+  handwrittenReceipt: boolean
 }
 
 export default class Expense extends AppBaseModel {
@@ -63,6 +65,12 @@ export default class Expense extends AppBaseModel {
 
   @column()
   declare categoryMatch: boolean | null
+
+  @column()
+  declare categoryExceedsLimit: boolean | null
+
+  @column()
+  declare categoryExceedsLimitDetail: string | null
 
   // Workflow
   @column()

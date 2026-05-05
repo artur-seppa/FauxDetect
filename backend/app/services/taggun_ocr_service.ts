@@ -9,6 +9,21 @@ interface TaggunField<T> {
   confidenceLevel: number
 }
 
+interface TaggunTamperDetection {
+  isTampered?: boolean
+  tamperScore?: number
+}
+
+interface TaggunHandwritingDetection {
+  isHandwritten?: boolean
+  handwrittenScore?: number
+}
+
+interface TaggunDigitalDetection {
+  isDigital?: boolean
+  digitalScore?: number
+}
+
 interface TaggunResponse {
   totalAmount?: TaggunField<number>
   date?: TaggunField<string>
@@ -18,6 +33,9 @@ interface TaggunResponse {
   merchantState?: TaggunField<string>
   text?: { text: string }
   confidenceLevel?: number
+  tamperDetection?: TaggunTamperDetection
+  handwritingDetection?: TaggunHandwritingDetection
+  digitalDetection?: TaggunDigitalDetection
   error?: string
 }
 
@@ -81,6 +99,14 @@ export default class TaggunOcrService implements OcrService {
       extractedDate,
       extractedVendor,
       extractedDescription,
+      providerFraud: {
+        isTampered: data.tamperDetection?.isTampered,
+        tamperScore: data.tamperDetection?.tamperScore,
+        isHandwritten: data.handwritingDetection?.isHandwritten,
+        handwrittenScore: data.handwritingDetection?.handwrittenScore,
+        isDigital: data.digitalDetection?.isDigital,
+        digitalScore: data.digitalDetection?.digitalScore,
+      },
     }
   }
 }

@@ -7,7 +7,7 @@ import { api } from '@/lib/api'
 import type { Expense } from '@/lib/types'
 import { StatusBadge } from '@/components/status-badge'
 import { FraudSignalsCard } from '@/components/fraud-signals-card'
-import { CategoryMatchBadge } from '@/components/category-match-badge'
+import { CategoryAnalysisCard } from '@/components/category-analysis-card'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
 export default function ExpenseDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -66,9 +66,15 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ id: st
                 <dt className="text-gray-500">Categoria</dt>
                 <dd className="font-medium">{(expense.selectedCategory ?? expense.category)?.name ?? '—'}</dd>
               </div>
+              {expense.employeeDescription && (
+                <div className="flex justify-between py-2.5">
+                  <dt className="text-gray-500">Descrição (funcionário)</dt>
+                  <dd className="max-w-[60%] text-right text-gray-700">{expense.employeeDescription}</dd>
+                </div>
+              )}
               {expense.extractedDescription && (
                 <div className="flex justify-between py-2.5">
-                  <dt className="text-gray-500">Descrição</dt>
+                  <dt className="text-gray-500">Descrição (OCR)</dt>
                   <dd className="max-w-[60%] text-right text-gray-700">{expense.extractedDescription}</dd>
                 </div>
               )}
@@ -81,7 +87,12 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
 
-          <CategoryMatchBadge match={expense.categoryMatch} categoryName={(expense.selectedCategory ?? expense.category)?.name} />
+          <CategoryAnalysisCard
+            categoryMatch={expense.categoryMatch}
+            categoryExceedsLimit={expense.categoryExceedsLimit}
+            categoryExceedsLimitDetail={expense.categoryExceedsLimitDetail}
+            categoryName={(expense.selectedCategory ?? expense.category)?.name}
+          />
 
           {expense.fraudSignals && (
             <FraudSignalsCard signals={expense.fraudSignals} fraudScore={expense.fraudScore} />

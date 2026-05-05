@@ -19,6 +19,8 @@ export const ExpenseFactory = factory
       fraudScore: null,
       fraudDetails: null,
       categoryMatch: null,
+      categoryExceedsLimit: null,
+      categoryExceedsLimitDetail: null,
       rejectionReason: null,
       approvedBy: null,
       approvedAt: null,

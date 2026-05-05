@@ -1,11 +1,12 @@
 import type { OcrResult } from '#services/ocr_service'
-import type Category from '#models/category'
+
+export type SignalKey = 'lowOcrConfidence' | 'suspiciousWords' | 'handwrittenReceipt'
 
 export type FraudSignals = {
-  duplicateFile: boolean
   lowOcrConfidence: boolean
+  ocrConfidenceValue: number
   suspiciousWords: boolean
-  amountExceedsCategoryLimit: boolean
+  handwrittenReceipt: boolean
 }
 
 export type FraudResult = {
@@ -27,23 +28,22 @@ const SUSPICIOUS_WORDS = [
   'falso',
 ]
 
-const SIGNAL_SCORES: Record<keyof FraudSignals, number> = {
-  duplicateFile: 50,
-  lowOcrConfidence: 15,
-  suspiciousWords: 10,
-  amountExceedsCategoryLimit: 20,
+const SIGNAL_SCORES: Record<SignalKey, number> = {
+  lowOcrConfidence: 40,
+  suspiciousWords: 20,
+  handwrittenReceipt: 40,
 }
 
 export default class FraudDetectorService {
-  analyze(ocr: OcrResult, category: Category | null, isDuplicate: boolean): FraudResult {
+  analyze(ocr: OcrResult): FraudResult {
     const signals: FraudSignals = {
-      duplicateFile: isDuplicate,
       lowOcrConfidence: ocr.confidence < 70,
+      ocrConfidenceValue: ocr.confidence,
       suspiciousWords: this.#hasSuspiciousWords(ocr.rawText),
-      amountExceedsCategoryLimit: this.#exceedsCategoryLimit(ocr.extractedAmount, category),
+      handwrittenReceipt: ocr.providerFraud?.isHandwritten ?? this.#isHandwritten(ocr),
     }
 
-    const score = (Object.keys(signals) as Array<keyof FraudSignals>)
+    const score = (Object.keys(SIGNAL_SCORES) as SignalKey[])
       .filter((key) => signals[key])
       .reduce((acc, key) => acc + SIGNAL_SCORES[key], 0)
 
@@ -52,7 +52,7 @@ export default class FraudDetectorService {
     else if (score >= 40) status = 'manual_review'
     else status = 'pending'
 
-    return { signals, score, status, details: this.#buildDetails(signals, ocr.confidence) }
+    return { signals, score, status, details: this.#buildDetails(signals) }
   }
 
   #hasSuspiciousWords(text: string): boolean {
@@ -60,17 +60,17 @@ export default class FraudDetectorService {
     return SUSPICIOUS_WORDS.some((word) => lower.includes(word))
   }
 
-  #exceedsCategoryLimit(amount: number | null, category: Category | null): boolean {
-    if (!amount || !category?.maxAmount) return false
-    return amount > category.maxAmount
+  #isHandwritten(ocr: OcrResult): boolean {
+    const wordCount = ocr.rawText.trim().split(/\s+/).filter(Boolean).length
+    return ocr.confidence >= 30 && ocr.confidence < 72 && wordCount > 5
   }
 
-  #buildDetails(signals: FraudSignals, confidence: number): string {
+  #buildDetails(signals: FraudSignals): string {
     const messages: string[] = []
-    if (signals.duplicateFile) messages.push('duplicate file detected')
-    if (signals.lowOcrConfidence) messages.push(`low OCR confidence (${confidence.toFixed(0)}%)`)
+    if (signals.lowOcrConfidence)
+      messages.push(`low OCR confidence (${signals.ocrConfidenceValue.toFixed(0)}%)`)
     if (signals.suspiciousWords) messages.push('suspicious words in text')
-    if (signals.amountExceedsCategoryLimit) messages.push('amount exceeds category limit')
+    if (signals.handwrittenReceipt) messages.push('handwritten receipt detected')
     return messages.length ? messages.join('; ') : 'no fraud signals detected'
   }
 }

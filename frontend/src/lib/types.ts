@@ -18,11 +18,13 @@ export interface Category {
   keywords: string[]
 }
 
+export type SignalKey = 'lowOcrConfidence' | 'suspiciousWords' | 'handwrittenReceipt'
+
 export interface FraudSignals {
-  duplicateFile: boolean
-  amountExceedsCategoryLimit: boolean
   lowOcrConfidence: boolean
+  ocrConfidenceValue: number
   suspiciousWords: boolean
+  handwrittenReceipt: boolean
 }
 
 export interface Expense {
@@ -31,6 +33,7 @@ export interface Expense {
   user?: User
   originalFilename: string
   fileHash: string
+  employeeDescription: string | null
   extractedAmount: number | null
   extractedDate: string | null
   extractedVendor: string | null
@@ -41,7 +44,9 @@ export interface Expense {
   selectedCategoryId: number | null
   selectedCategory?: Category
   category?: Category
-  categoryMatch: boolean
+  categoryMatch: boolean | null
+  categoryExceedsLimit: boolean | null
+  categoryExceedsLimitDetail: string | null
   status: ExpenseStatus
   rejectionReason: string | null
   approvedBy: number | null
