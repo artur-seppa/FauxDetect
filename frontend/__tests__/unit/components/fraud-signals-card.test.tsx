@@ -1,31 +1,33 @@
 import { describe, test, expect, afterEach } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
 import { FraudSignalsCard } from '@/components/fraud-signals-card'
-
-afterEach(cleanup)
 import type { FraudSignals } from '@/lib/types'
 
+afterEach(cleanup)
+
 const NO_SIGNALS: FraudSignals = {
-  duplicateFile: false,
   amountExceedsCategoryLimit: false,
-  lowOcrConfidence: false,
-  suspiciousWords: false,
+  geminiDigitalTampering: false,
+  geminiAiGenerated: false,
+  geminiNotADocument: false,
+  geminiInconsistentData: false,
 }
 
 const ALL_SIGNALS: FraudSignals = {
-  duplicateFile: true,
   amountExceedsCategoryLimit: true,
-  lowOcrConfidence: true,
-  suspiciousWords: true,
+  geminiDigitalTampering: true,
+  geminiAiGenerated: true,
+  geminiNotADocument: true,
+  geminiInconsistentData: true,
 }
 
 describe('FraudSignalsCard — labels', () => {
-  test('renders all four signal labels', () => {
+  test('renders all four gemini signal labels', () => {
     render(<FraudSignalsCard signals={NO_SIGNALS} fraudScore={0} />)
-    expect(screen.getByText('Arquivo duplicado')).toBeDefined()
-    expect(screen.getByText('Valor excede limite da categoria')).toBeDefined()
-    expect(screen.getByText('Baixa confiança no OCR')).toBeDefined()
-    expect(screen.getByText('Palavras suspeitas detectadas')).toBeDefined()
+    expect(screen.getByText('Adulteração digital detectada')).toBeDefined()
+    expect(screen.getByText('Documento gerado por IA')).toBeDefined()
+    expect(screen.getByText('Arquivo não é um documento válido')).toBeDefined()
+    expect(screen.getByText('Dados inconsistentes no documento')).toBeDefined()
   })
 
   test('renders card heading', () => {
@@ -73,27 +75,29 @@ describe('FraudSignalsCard — fraud score color', () => {
 })
 
 describe('FraudSignalsCard — signal badges and label colors', () => {
-  test('active signal renders red label', () => {
-    render(<FraudSignalsCard signals={{ ...NO_SIGNALS, duplicateFile: true }} fraudScore={50} />)
-    const label = screen.getByText('Arquivo duplicado')
+  test('active geminiDigitalTampering renders red label', () => {
+    render(
+      <FraudSignalsCard signals={{ ...NO_SIGNALS, geminiDigitalTampering: true }} fraudScore={50} />
+    )
+    const label = screen.getByText('Adulteração digital detectada')
     expect(label.className).toContain('text-red-700')
   })
 
   test('inactive signal renders gray label', () => {
     render(<FraudSignalsCard signals={NO_SIGNALS} fraudScore={0} />)
-    const label = screen.getByText('Arquivo duplicado')
+    const label = screen.getByText('Adulteração digital detectada')
     expect(label.className).toContain('text-gray-500')
   })
 
   test('active signal renders "Detectado" badge', () => {
     const { container } = render(
-      <FraudSignalsCard signals={{ ...NO_SIGNALS, suspiciousWords: true }} fraudScore={10} />
+      <FraudSignalsCard signals={{ ...NO_SIGNALS, geminiAiGenerated: true }} fraudScore={10} />
     )
     const items = container.querySelectorAll('li')
-    const suspiciousItem = Array.from(items).find((li) =>
-      li.textContent?.includes('Palavras suspeitas detectadas')
+    const aiItem = Array.from(items).find((li) =>
+      li.textContent?.includes('Documento gerado por IA')
     )
-    expect(suspiciousItem?.textContent).toContain('Detectado')
+    expect(aiItem?.textContent).toContain('Detectado')
   })
 
   test('inactive signal renders "OK" badge', () => {

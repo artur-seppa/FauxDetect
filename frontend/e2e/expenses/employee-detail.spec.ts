@@ -41,7 +41,7 @@ test.describe('employee expense detail', () => {
       route.fulfill({ json: MOCK_PENDING_EXPENSE })
     )
     await page.goto(`/expenses/${MOCK_PENDING_EXPENSE.id}`)
-    await expect(page.getByText('Categoria', { exact: true })).toBeVisible()
+    await expect(page.locator('dt', { hasText: 'Categoria' })).toBeVisible()
     await expect(page.getByText('Almoço', { exact: true })).toBeVisible()
   })
 
@@ -68,7 +68,7 @@ test.describe('employee expense detail', () => {
       route.fulfill({ json: noMatch })
     )
     await page.goto(`/expenses/${MOCK_MANUAL_REVIEW_EXPENSE.id}`)
-    await expect(page.getByText('Não corresponde à categoria selecionada')).toBeVisible()
+    await expect(page.getByText('Não corresponde à categoria "Almoço"')).toBeVisible()
   })
 
   test('shows rejection reason block for rejected expense', async ({ page }) => {
