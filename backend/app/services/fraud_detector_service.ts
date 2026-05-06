@@ -2,10 +2,11 @@ import type { OcrResult } from '#services/ocr_service'
 import type Category from '#models/category'
 
 export type FraudSignals = {
-  duplicateFile: boolean
-  lowOcrConfidence: boolean
-  suspiciousWords: boolean
   amountExceedsCategoryLimit: boolean
+  geminiDigitalTampering: boolean
+  geminiAiGenerated: boolean
+  geminiNotADocument: boolean
+  geminiInconsistentData: boolean
 }
 
 export type FraudResult = {
@@ -15,32 +16,24 @@ export type FraudResult = {
   details: string
 }
 
-const SUSPICIOUS_WORDS = [
-  'test',
-  'fake',
-  'sample',
-  'lorem',
-  'dummy',
-  'xxxxx',
-  'asdf',
-  'teste',
-  'falso',
-]
-
 const SIGNAL_SCORES: Record<keyof FraudSignals, number> = {
-  duplicateFile: 50,
-  lowOcrConfidence: 15,
-  suspiciousWords: 10,
-  amountExceedsCategoryLimit: 20,
+  amountExceedsCategoryLimit: 0,
+  geminiDigitalTampering: 70,
+  geminiAiGenerated: 70,
+  geminiNotADocument: 70,
+  geminiInconsistentData: 15,
 }
 
 export default class FraudDetectorService {
-  analyze(ocr: OcrResult, category: Category | null, isDuplicate: boolean): FraudResult {
+  analyze(ocr: OcrResult, category: Category | null): FraudResult {
+    const g = ocr.geminiSignals
+
     const signals: FraudSignals = {
-      duplicateFile: isDuplicate,
-      lowOcrConfidence: ocr.confidence < 70,
-      suspiciousWords: this.#hasSuspiciousWords(ocr.rawText),
       amountExceedsCategoryLimit: this.#exceedsCategoryLimit(ocr.extractedAmount, category),
+      geminiDigitalTampering: g?.digitalTampering ?? false,
+      geminiAiGenerated: g?.aiGenerated ?? false,
+      geminiNotADocument: g?.notADocument ?? false,
+      geminiInconsistentData: g?.inconsistentData ?? false,
     }
 
     const score = (Object.keys(signals) as Array<keyof FraudSignals>)
@@ -52,12 +45,7 @@ export default class FraudDetectorService {
     else if (score >= 40) status = 'manual_review'
     else status = 'pending'
 
-    return { signals, score, status, details: this.#buildDetails(signals, ocr.confidence) }
-  }
-
-  #hasSuspiciousWords(text: string): boolean {
-    const lower = text.toLowerCase()
-    return SUSPICIOUS_WORDS.some((word) => lower.includes(word))
+    return { signals, score, status, details: this.#buildDetails(signals, ocr) }
   }
 
   #exceedsCategoryLimit(amount: number | null, category: Category | null): boolean {
@@ -65,12 +53,13 @@ export default class FraudDetectorService {
     return amount > category.maxAmount
   }
 
-  #buildDetails(signals: FraudSignals, confidence: number): string {
+  #buildDetails(signals: FraudSignals, ocr: OcrResult): string {
     const messages: string[] = []
-    if (signals.duplicateFile) messages.push('duplicate file detected')
-    if (signals.lowOcrConfidence) messages.push(`low OCR confidence (${confidence.toFixed(0)}%)`)
-    if (signals.suspiciousWords) messages.push('suspicious words in text')
-    if (signals.amountExceedsCategoryLimit) messages.push('amount exceeds category limit')
+    if (signals.geminiDigitalTampering) messages.push('digital tampering detected')
+    if (signals.geminiAiGenerated) messages.push('AI-generated document detected')
+    if (signals.geminiNotADocument) messages.push('file is not a valid document')
+    if (signals.geminiInconsistentData) messages.push('inconsistent data detected')
+    if (ocr.geminiSignals?.fraudReason) messages.push(ocr.geminiSignals.fraudReason)
     return messages.length ? messages.join('; ') : 'no fraud signals detected'
   }
 }

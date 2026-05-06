@@ -9,87 +9,111 @@ const baseOcr: OcrResult = {
   extractedDate: null,
   extractedVendor: 'Cafe Brasil',
   extractedDescription: 'Lunch at Cafe Brasil',
+  categoryMatch: null,
 }
+
+const withGemini = (overrides: {
+  digitalTampering?: boolean
+  aiGenerated?: boolean
+  notADocument?: boolean
+  inconsistentData?: boolean
+}): OcrResult => ({
+  ...baseOcr,
+  geminiSignals: {
+    digitalTampering: overrides.digitalTampering ?? false,
+    aiGenerated: overrides.aiGenerated ?? false,
+    notADocument: overrides.notADocument ?? false,
+    inconsistentData: overrides.inconsistentData ?? false,
+    fraudReason: null,
+  },
+})
 
 const fakeCategory = (maxAmount: number | null) =>
   ({ name: 'Lunch', maxAmount, active: true }) as any
 
 test.group('FraudDetectorService', () => {
-  test('returns pending when no fraud signals', ({ assert }) => {
-    const result = new FraudDetectorService().analyze(baseOcr, null, false)
+  test('returns pending with score 0 when no fraud signals', ({ assert }) => {
+    const result = new FraudDetectorService().analyze(baseOcr, null)
 
     assert.equal(result.status, 'pending')
     assert.equal(result.score, 0)
-    assert.isFalse(result.signals.duplicateFile)
-    assert.isFalse(result.signals.lowOcrConfidence)
-    assert.isFalse(result.signals.suspiciousWords)
+    assert.isFalse(result.signals.geminiAiGenerated)
+    assert.isFalse(result.signals.geminiDigitalTampering)
+    assert.isFalse(result.signals.geminiNotADocument)
+    assert.isFalse(result.signals.geminiInconsistentData)
     assert.isFalse(result.signals.amountExceedsCategoryLimit)
   })
 
-  test('adds 50 points for duplicate file', ({ assert }) => {
-    const result = new FraudDetectorService().analyze(baseOcr, null, true)
+  test('returns rejected when geminiAiGenerated is true', ({ assert }) => {
+    const result = new FraudDetectorService().analyze(withGemini({ aiGenerated: true }), null)
 
-    assert.isTrue(result.signals.duplicateFile)
-    assert.equal(result.score, 50)
-    assert.equal(result.status, 'manual_review')
+    assert.isTrue(result.signals.geminiAiGenerated)
+    assert.equal(result.score, 70)
+    assert.equal(result.status, 'rejected')
   })
 
-  test('adds 15 points for low OCR confidence', ({ assert }) => {
-    const ocr = { ...baseOcr, confidence: 60 }
-    const result = new FraudDetectorService().analyze(ocr, null, false)
+  test('returns rejected when geminiDigitalTampering is true', ({ assert }) => {
+    const result = new FraudDetectorService().analyze(withGemini({ digitalTampering: true }), null)
 
-    assert.isTrue(result.signals.lowOcrConfidence)
+    assert.isTrue(result.signals.geminiDigitalTampering)
+    assert.equal(result.score, 70)
+    assert.equal(result.status, 'rejected')
+  })
+
+  test('returns rejected when geminiNotADocument is true', ({ assert }) => {
+    const result = new FraudDetectorService().analyze(withGemini({ notADocument: true }), null)
+
+    assert.isTrue(result.signals.geminiNotADocument)
+    assert.equal(result.score, 70)
+    assert.equal(result.status, 'rejected')
+  })
+
+  test('returns pending with score 15 when only geminiInconsistentData is true', ({ assert }) => {
+    const result = new FraudDetectorService().analyze(withGemini({ inconsistentData: true }), null)
+
+    assert.isTrue(result.signals.geminiInconsistentData)
     assert.equal(result.score, 15)
+    assert.equal(result.status, 'pending')
   })
 
-  test('adds 10 points for suspicious words in raw text', ({ assert }) => {
-    const ocr = { ...baseOcr, rawText: 'This is a test receipt' }
-    const result = new FraudDetectorService().analyze(ocr, null, false)
-
-    assert.isTrue(result.signals.suspiciousWords)
-    assert.equal(result.score, 10)
-  })
-
-  test('adds 20 points when amount exceeds category limit', ({ assert }) => {
-    const ocr = { ...baseOcr, extractedAmount: 150 }
-    const result = new FraudDetectorService().analyze(ocr, fakeCategory(100), false)
+  test('amountExceedsCategoryLimit does not contribute to fraud score', ({ assert }) => {
+    const ocr = { ...baseOcr, extractedAmount: 200 }
+    const result = new FraudDetectorService().analyze(ocr, fakeCategory(100))
 
     assert.isTrue(result.signals.amountExceedsCategoryLimit)
-    assert.equal(result.score, 20)
+    assert.equal(result.score, 0)
+    assert.equal(result.status, 'pending')
   })
 
-  test('does not flag amount when category has no limit', ({ assert }) => {
+  test('does not flag amountExceedsCategoryLimit when category has no limit', ({ assert }) => {
     const ocr = { ...baseOcr, extractedAmount: 9999 }
-    const result = new FraudDetectorService().analyze(ocr, fakeCategory(null), false)
+    const result = new FraudDetectorService().analyze(ocr, fakeCategory(null))
 
     assert.isFalse(result.signals.amountExceedsCategoryLimit)
   })
 
-  test('returns rejected when score >= 70', ({ assert }) => {
-    const ocr = { ...baseOcr, confidence: 60, rawText: 'test receipt fake' }
-    const result = new FraudDetectorService().analyze(ocr, null, true)
+  test('returns rejected when multiple gemini signals combine above 70', ({ assert }) => {
+    const result = new FraudDetectorService().analyze(
+      withGemini({ inconsistentData: true, aiGenerated: true }),
+      null
+    )
 
     assert.isAtLeast(result.score, 70)
     assert.equal(result.status, 'rejected')
   })
 
-  test('returns manual_review when score is between 40 and 69', ({ assert }) => {
-    const result = new FraudDetectorService().analyze(baseOcr, null, true)
+  test('details string lists triggered gemini signals', ({ assert }) => {
+    const result = new FraudDetectorService().analyze(
+      withGemini({ aiGenerated: true, inconsistentData: true }),
+      null
+    )
 
-    assert.equal(result.score, 50)
-    assert.equal(result.status, 'manual_review')
+    assert.include(result.details, 'AI-generated document detected')
+    assert.include(result.details, 'inconsistent data detected')
   })
 
-  test('details string lists all triggered signals', ({ assert }) => {
-    const ocr = { ...baseOcr, confidence: 60 }
-    const result = new FraudDetectorService().analyze(ocr, null, true)
-
-    assert.include(result.details, 'duplicate file')
-    assert.include(result.details, 'low OCR confidence')
-  })
-
-  test('details string says no fraud signals when score is zero', ({ assert }) => {
-    const result = new FraudDetectorService().analyze(baseOcr, null, false)
+  test('details returns no fraud signals when score is zero', ({ assert }) => {
+    const result = new FraudDetectorService().analyze(baseOcr, null)
 
     assert.equal(result.details, 'no fraud signals detected')
   })

@@ -1,6 +1,6 @@
 # FauxDetect
 
-Intelligent expense reimbursement system with fraud detection powered by Tesseract OCR.
+Intelligent expense reimbursement system with AI-powered fraud detection via Google Gemini.
 
 ## Stack
 
@@ -11,7 +11,7 @@ Intelligent expense reimbursement system with fraud detection powered by Tessera
 | Queue | @rlanz/bull-queue + BullMQ (Redis) |
 | Database | PostgreSQL + Lucid ORM |
 | Auth | AdonisJS Auth (access tokens) |
-| OCR | Tesseract.js + Taggun OCR |
+| OCR / AI | Google Gemini 3 Flash Preview |
 | Email | AdonisJS Mail (SMTP) |
 
 ## Prerequisites
@@ -71,7 +71,7 @@ The app will be available at `http://localhost:3000`.
 
 ### 4. Start the queue worker
 
-The worker processes expense files in the background (Taggun OCR + fraud detection). Run it in a **separate terminal**:
+The worker processes expense files in the background (Gemini OCR + fraud detection). Run it in a **separate terminal**:
 
 ```bash
 cd backend
@@ -136,7 +136,7 @@ Copy `backend/.env.example` to `backend/.env` and fill in:
 | `REDIS_HOST / REDIS_PORT` | Redis connection (matches docker-compose defaults) |
 | `SMTP_HOST / SMTP_PORT` | SMTP server — defaults point to Mailpit (`localhost:1025`) |
 | `SMTP_USER / SMTP_PASS` | Optional — leave empty when using Mailpit |
-| `TAGGUN_API_KEY` | Taggun OCR API key (https://www.taggun.io) |
+| `GEMINI_API_KEY` | Google AI API key — obtain at https://aistudio.google.com |
 
 ## Project structure
 
@@ -148,7 +148,7 @@ faux-detect/
 │   │   ├── models/         # User, Category, Expense
 │   │   ├── controllers/
 │   │   ├── middleware/
-│   │   ├── services/       # Taggun OCR, fraud detector, category matcher
+│   │   ├── services/       # Gemini OCR, fraud detector
 │   │   └── jobs/           # ProcessExpenseJob, SendEmailJob (Bull Queue)
 │   ├── config/             # database, auth, mail, queue
 │   ├── database/

@@ -18,8 +18,8 @@ export default await Env.create(new URL('../', import.meta.url), {
   REDIS_HOST: Env.schema.string({ format: 'host' }),
   REDIS_PORT: Env.schema.number(),
 
-  // Taggun OCR
-  TAGGUN_API_KEY: Env.schema.string(),
+  // Gemini OCR
+  GEMINI_API_KEY: Env.schema.string(),
 
   // Email (SMTP)
   SMTP_HOST: Env.schema.string(),

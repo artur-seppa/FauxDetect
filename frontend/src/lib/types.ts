@@ -19,10 +19,11 @@ export interface Category {
 }
 
 export interface FraudSignals {
-  duplicateFile: boolean
   amountExceedsCategoryLimit: boolean
-  lowOcrConfidence: boolean
-  suspiciousWords: boolean
+  geminiDigitalTampering: boolean
+  geminiAiGenerated: boolean
+  geminiNotADocument: boolean
+  geminiInconsistentData: boolean
 }
 
 export interface Expense {
@@ -42,6 +43,8 @@ export interface Expense {
   selectedCategory?: Category
   category?: Category
   categoryMatch: boolean
+  categoryExceedsLimit: boolean | null
+  categoryExceedsLimitDetail: string | null
   status: ExpenseStatus
   rejectionReason: string | null
   approvedBy: number | null

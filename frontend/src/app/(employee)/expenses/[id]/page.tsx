@@ -81,10 +81,15 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
 
-          <CategoryMatchBadge match={expense.categoryMatch} categoryName={(expense.selectedCategory ?? expense.category)?.name} />
+          <CategoryMatchBadge
+            match={expense.categoryMatch}
+            categoryName={(expense.selectedCategory ?? expense.category)?.name}
+            categoryExceedsLimit={expense.categoryExceedsLimit}
+            categoryExceedsLimitDetail={expense.categoryExceedsLimitDetail}
+          />
 
           {expense.fraudSignals && (
-            <FraudSignalsCard signals={expense.fraudSignals} fraudScore={expense.fraudScore} />
+            <FraudSignalsCard signals={expense.fraudSignals} fraudScore={expense.fraudScore} fraudDetails={expense.fraudDetails} />
           )}
 
           {expense.rejectionReason && (

@@ -4,9 +4,8 @@ import drive from '@adonisjs/drive/services/main'
 import queue from '@rlanz/bull-queue/services/main'
 import Expense from '#models/expense'
 import Category from '#models/category'
-import TaggunOcrService from '#services/taggun_ocr_service'
+import GeminiOcrService from '#services/gemini_ocr_service'
 import FraudDetectorService from '#services/fraud_detector_service'
-import CategoryMatcherService from '#services/category_matcher_service'
 import SendEmailJob from '#jobs/send_email_job'
 import NotifyHrJob from '#jobs/notify_hr_job'
 
@@ -29,24 +28,26 @@ export default class ProcessExpenseJob extends Job {
     const buffer = Buffer.from(bytes)
 
     const hash = createHash('sha256').update(buffer).digest('hex')
-    const isDuplicate =
-      hash !== expense.fileHash &&
-      (await Expense.query().where('file_hash', hash).whereNot('id', expense.id).first()) !== null
-
-    const mimeType = this.#resolveMimeType(expense.originalFilename)
-    const ocr = await new TaggunOcrService().process(buffer, mimeType)
 
     const categories = await Category.query().where('active', true).preload('keywords')
     const selectedCategory = expense.selectedCategoryId
       ? categories.find((c) => c.id === expense.selectedCategoryId) ?? null
       : null
 
-    const fraud = new FraudDetectorService().analyze(ocr, selectedCategory, isDuplicate)
-    const categoryMatch = new CategoryMatcherService().match(
-      selectedCategory,
-      ocr.extractedVendor,
-      ocr.extractedDescription
-    )
+    const mimeType = this.#resolveMimeType(expense.originalFilename)
+    const categoryContext = selectedCategory
+      ? { name: selectedCategory.name, keywords: selectedCategory.keywords.map((k) => k.name) }
+      : { name: '', keywords: [] }
+    const ocr = await new GeminiOcrService().process(buffer, mimeType, categoryContext)
+
+    const fraud = new FraudDetectorService().analyze(ocr, selectedCategory)
+    const categoryMatch = ocr.categoryMatch ?? false
+
+    const categoryExceedsLimit = fraud.signals.amountExceedsCategoryLimit
+    const categoryExceedsLimitDetail =
+      categoryExceedsLimit && ocr.extractedAmount !== null && selectedCategory?.maxAmount
+        ? `Amount: ${ocr.extractedAmount}; Limit: ${selectedCategory.maxAmount}`
+        : null
 
     await expense
       .merge({
@@ -59,6 +60,8 @@ export default class ProcessExpenseJob extends Job {
         fraudScore: fraud.score,
         fraudDetails: fraud.details,
         categoryMatch,
+        categoryExceedsLimit,
+        categoryExceedsLimitDetail,
         status: fraud.status,
         rejectionReason: fraud.status === 'rejected' ? fraud.details : null,
       })
