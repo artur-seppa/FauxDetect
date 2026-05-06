@@ -59,6 +59,10 @@ export interface HrDashboard {
   manualReview: number
   approvedToday: number
   rejectedToday: number
+  statusDistribution: { status: string; total: number }[]
+  expensesByUser: { name: string; total: number }[]
+  fraudSignalCounts: { signal: string; total: number }[]
+  expensesByDay: { day: string; total: number }[]
 }
 
 export interface PaginatedResponse<T> {
