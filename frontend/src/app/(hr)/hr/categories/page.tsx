@@ -13,18 +13,22 @@ import { Drawer } from '@/components/drawer'
 import { ConfirmModal } from '@/components/confirm-modal'
 import { Skeleton } from '@/components/ui/skeleton'
 
-const schema = z.object({
-  name: z.string().min(1),
-  maxAmount: z.string().optional(),
-  keywords: z.string().optional(),
-})
-
-type FormData = z.infer<typeof schema>
+type FormData = {
+  name: string
+  maxAmount?: string
+  keywords?: string
+}
 
 export default function CategoriesPage() {
   const queryClient = useQueryClient()
   const t = useTranslations('categories')
   const tCommon = useTranslations('common')
+
+  const schema = z.object({
+    name: z.string().min(1, t('form.nameRequired')),
+    maxAmount: z.string().optional(),
+    keywords: z.string().optional(),
+  })
   const [editTarget, setEditTarget] = useState<'new' | Category | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null)
 

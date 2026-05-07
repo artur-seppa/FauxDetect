@@ -139,6 +139,7 @@
       "name": "Nome",
       "keywords": "Keywords",
       "keywordsHint": "Separe as keywords por vírgula.",
+      "nameRequired": "Nome obrigatório",
       "limit": "Limite (R$)",
       "limitHint": "Deixe em branco para sem limite.",
       "saveError": "Ocorreu um erro ao salvar. Tente novamente."
@@ -155,10 +156,10 @@
     "detected": "Detectado",
     "ok": "OK",
     "amountExceedsCategoryLimit": "Valor acima do limite",
-    "geminiDigitalTampering": "Adulteração digital",
-    "geminiAiGenerated": "Gerado por IA",
-    "geminiNotADocument": "Não é documento",
-    "geminiInconsistentData": "Dados inconsistentes"
+    "geminiDigitalTampering": "Adulteração digital detectada",
+    "geminiAiGenerated": "Documento gerado por IA",
+    "geminiNotADocument": "Arquivo não é um documento válido",
+    "geminiInconsistentData": "Dados inconsistentes no documento"
   },
   "categoryMatch": {
     "title": "Categoria",

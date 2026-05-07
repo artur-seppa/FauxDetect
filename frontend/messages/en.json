@@ -139,6 +139,7 @@
       "name": "Name",
       "keywords": "Keywords",
       "keywordsHint": "Separate keywords with commas.",
+      "nameRequired": "Name is required",
       "limit": "Limit (R$)",
       "limitHint": "Leave blank for no limit.",
       "saveError": "An error occurred while saving. Please try again."
