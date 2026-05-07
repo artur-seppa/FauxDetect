@@ -76,7 +76,8 @@ export default function EmployeeDashboardPage() {
         <p className="text-sm text-gray-500">Nenhuma despesa encontrada.</p>
       ) : (
         <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[500px] text-sm">
             <thead className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
               <tr>
                 <th className="px-4 py-3">Arquivo</th>
@@ -89,7 +90,11 @@ export default function EmployeeDashboardPage() {
             <tbody className="divide-y divide-gray-100">
               {data.map((expense: Expense) => (
                 <tr key={expense.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium">{expense.originalFilename}</td>
+                  <td className="px-4 py-3 font-medium">
+                    <span className="block max-w-[220px] truncate" title={expense.originalFilename}>
+                      {expense.originalFilename}
+                    </span>
+                  </td>
                   <td className="px-4 py-3">{formatCurrency(expense.extractedAmount)}</td>
                   <td className="px-4 py-3">{formatDate(expense.extractedDate)}</td>
                   <td className="px-4 py-3">
@@ -107,6 +112,7 @@ export default function EmployeeDashboardPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

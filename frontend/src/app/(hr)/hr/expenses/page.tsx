@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useRef, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -21,6 +22,19 @@ export default function HrExpensesPage() {
   const router = useRouter()
   const status = searchParams.get('status') ?? ''
 
+  const [filterOpen, setFilterOpen] = useState(false)
+  const filterRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
+        setFilterOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [])
+
   const { data, isLoading } = useQuery({
     queryKey: ['hr-expenses', status],
     queryFn: () =>
@@ -33,7 +47,43 @@ export default function HrExpensesPage() {
     <div className="space-y-6">
       <h1 className="text-xl font-semibold">Despesas</h1>
 
-      <div className="flex gap-2">
+      {/* mobile: custom dropdown */}
+      <div className="relative sm:hidden" ref={filterRef}>
+        <button
+          onClick={() => setFilterOpen((o) => !o)}
+          className="flex w-full items-center justify-between rounded-full border border-gray-200 bg-white px-4 py-1.5 text-xs font-medium text-gray-700 shadow-sm"
+        >
+          <span>{STATUS_OPTIONS.find((o) => o.value === status)?.label}</span>
+          <svg
+            className={`ml-2 h-3 w-3 transition-transform ${filterOpen ? 'rotate-180' : ''}`}
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+          </svg>
+        </button>
+        {filterOpen && (
+          <div className="absolute left-0 top-full z-10 mt-1 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+            {STATUS_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  router.push(opt.value ? `/hr/expenses?status=${opt.value}` : '/hr/expenses')
+                  setFilterOpen(false)
+                }}
+                className={`w-full px-4 py-2 text-left text-xs transition-colors hover:bg-gray-50 ${
+                  status === opt.value ? 'font-semibold text-blue-600' : 'text-gray-700'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* desktop: pill buttons */}
+      <div className="hidden sm:flex flex-wrap gap-2">
         {STATUS_OPTIONS.map((opt) => (
           <Link
             key={opt.value}
@@ -55,7 +105,8 @@ export default function HrExpensesPage() {
         <p className="text-sm text-gray-500">Nenhuma despesa encontrada.</p>
       ) : (
         <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[700px] text-sm">
             <thead className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
               <tr>
                 <th className="px-4 py-3">Funcionário</th>
@@ -72,7 +123,11 @@ export default function HrExpensesPage() {
               {(data ?? []).map((expense: Expense) => (
                 <tr key={expense.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">{expense.user?.fullName ?? '—'}</td>
-                  <td className="px-4 py-3 font-medium">{expense.originalFilename}</td>
+                  <td className="px-4 py-3 font-medium">
+                    <span className="block max-w-[220px] truncate" title={expense.originalFilename}>
+                      {expense.originalFilename}
+                    </span>
+                  </td>
                   <td className="px-4 py-3">{formatCurrency(expense.extractedAmount)}</td>
                   <td className="px-4 py-3">{formatDate(expense.extractedDate)}</td>
                   <td className="px-4 py-3">{(expense.selectedCategory ?? expense.category)?.name ?? '—'}</td>
@@ -104,6 +159,7 @@ export default function HrExpensesPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>
