@@ -1,13 +1,8 @@
+'use client'
+
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import type { ExpenseStatus } from '@/lib/types'
-
-const labels: Record<ExpenseStatus, string> = {
-  processing: 'Processando',
-  pending: 'Pendente',
-  approved: 'Aprovado',
-  rejected: 'Rejeitado',
-  manual_review: 'Revisão Manual',
-}
 
 const styles: Record<ExpenseStatus, string> = {
   processing: 'bg-gray-100 text-gray-700',
@@ -23,6 +18,7 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
+  const t = useTranslations('status')
   return (
     <span
       className={cn(
@@ -31,7 +27,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
         className
       )}
     >
-      {labels[status]}
+      {t(status)}
     </span>
   )
 }

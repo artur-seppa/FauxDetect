@@ -1,0 +1,173 @@
+{
+  "metadata": {
+    "title": "FauxDetect — Expense Reimbursement",
+    "description": "Expense reimbursement system with AI fraud detection"
+  },
+  "common": {
+    "loading": "Loading…",
+    "notFound": "Not found.",
+    "back": "← Back",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "actions": "Actions"
+  },
+  "status": {
+    "processing": "Processing",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "manual_review": "Manual Review"
+  },
+  "nav": {
+    "logout": "Sign out",
+    "employee": {
+      "myExpenses": "My Expenses"
+    },
+    "hr": {
+      "dashboard": "Dashboard",
+      "expenses": "Expenses",
+      "categories": "Categories"
+    }
+  },
+  "login": {
+    "subtitle": "Sign in to your account",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "error": "Invalid email or password.",
+    "emailInvalid": "Invalid email",
+    "passwordMin": "Minimum 8 characters"
+  },
+  "employeeDashboard": {
+    "title": "My Expenses",
+    "newExpense": "New Expense",
+    "empty": "No expenses found.",
+    "columns": {
+      "file": "File",
+      "amount": "Amount",
+      "date": "Date",
+      "status": "Status"
+    },
+    "view": "View",
+    "drawer": {
+      "title": "New Expense",
+      "receipt": "Receipt",
+      "receiptHint": "JPG, PNG or PDF — max 5 MB",
+      "category": "Category",
+      "categoryPlaceholder": "Select a category",
+      "description": "Description",
+      "descriptionOptional": "(optional)",
+      "descriptionPlaceholder": "e.g., lunch with client from company X",
+      "submit": "Submit Expense",
+      "submitting": "Submitting…",
+      "error": "Error submitting expense."
+    }
+  },
+  "expenseDetail": {
+    "notFound": "Expense not found.",
+    "viewReceipt": "View Receipt",
+    "receiptCardTitle": "Expense Receipt",
+    "vendor": "Vendor",
+    "date": "Date",
+    "category": "Category",
+    "description": "Description",
+    "total": "TOTAL",
+    "rejectionReason": "Rejection Reason"
+  },
+  "hrDashboard": {
+    "title": "HR Dashboard",
+    "pending": "Pending",
+    "manualReview": "Under Review",
+    "approvedToday": "Approved Today",
+    "rejectedToday": "Rejected Today",
+    "expensesByDay": "Expenses in the last 30 days",
+    "expensesByUser": "Expenses by employee",
+    "statusDistribution": "Status distribution",
+    "fraudSignals": "Detected fraud signals"
+  },
+  "hrExpenses": {
+    "title": "Expenses",
+    "empty": "No expenses found.",
+    "filterAll": "All",
+    "columns": {
+      "employee": "Employee",
+      "file": "File",
+      "amount": "Amount",
+      "date": "Date",
+      "category": "Category",
+      "score": "Score",
+      "status": "Status"
+    },
+    "review": "Review"
+  },
+  "hrExpenseDetail": {
+    "notFound": "Expense not found.",
+    "viewReceipt": "View Receipt",
+    "receiptCardTitle": "Expense Receipt",
+    "employee": "Employee",
+    "vendor": "Vendor",
+    "date": "Date",
+    "category": "Category",
+    "description": "Description",
+    "total": "TOTAL",
+    "rejectionReason": "Rejection Reason",
+    "rejectionPlaceholder": "Rejection reason…",
+    "confirmReject": "Confirm Rejection",
+    "rejecting": "Rejecting…",
+    "approve": "Approve",
+    "approving": "Approving…",
+    "reject": "Reject"
+  },
+  "categories": {
+    "title": "Categories",
+    "newCategory": "New Category",
+    "editCategory": "Edit Category",
+    "empty": "No categories registered.",
+    "columns": {
+      "name": "Name",
+      "keywords": "Keywords",
+      "limit": "Limit",
+      "status": "Status"
+    },
+    "active": "Active",
+    "inactive": "Inactive",
+    "edit": "Edit",
+    "delete": "Delete",
+    "form": {
+      "name": "Name",
+      "keywords": "Keywords",
+      "keywordsHint": "Separate keywords with commas.",
+      "limit": "Limit (R$)",
+      "limitHint": "Leave blank for no limit.",
+      "saveError": "An error occurred while saving. Please try again."
+    },
+    "deleteModal": {
+      "title": "Delete category",
+      "description": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+      "confirm": "Delete",
+      "deleting": "Deleting…"
+    }
+  },
+  "fraudSignals": {
+    "title": "Fraud Signals",
+    "detected": "Detected",
+    "ok": "OK",
+    "amountExceedsCategoryLimit": "Amount exceeds limit",
+    "geminiDigitalTampering": "Digital tampering detected",
+    "geminiAiGenerated": "AI-generated document",
+    "geminiNotADocument": "File is not a valid document",
+    "geminiInconsistentData": "Inconsistent data in document"
+  },
+  "categoryMatch": {
+    "title": "Category",
+    "matchOk": "Matches category \"{name}\"",
+    "matchFail": "Does not match category \"{name}\"",
+    "matchOkNoName": "Matches category",
+    "matchFailNoName": "Does not match category",
+    "withinLimit": "Amount within category limit",
+    "ok": "OK",
+    "attention": "Attention"
+  }
+}

@@ -3,19 +3,24 @@
 import { use, useState, useRef, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { api } from '@/lib/api'
 import type { Expense } from '@/lib/types'
 import { StatusBadge } from '@/components/status-badge'
 import { FraudSignalsCard } from '@/components/fraud-signals-card'
 import { CategoryMatchBadge } from '@/components/category-match-badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
 export default function ExpenseDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+  const t = useTranslations('expenseDetail')
+  const tCommon = useTranslations('common')
 
   const { data: expense, isLoading } = useQuery({
     queryKey: ['expense', id],
     queryFn: () => api.get<Expense>(`/expenses/${id}`).then((r) => r.data),
+    refetchInterval: (query) => (query.state.data?.status === 'processing' ? 2000 : false),
   })
 
   const [actionsOpen, setActionsOpen] = useState(false)
@@ -31,8 +36,39 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ id: st
     return () => document.removeEventListener('mousedown', onClickOutside)
   }, [])
 
-  if (isLoading) return <p className="text-sm text-gray-500">Carregando…</p>
-  if (!expense) return <p className="text-sm text-red-500">Despesa não encontrada.</p>
+  if (isLoading) return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-7 w-48" />
+          <Skeleton className="h-5 w-20 rounded-full" />
+        </div>
+        <Skeleton className="h-9 w-32 rounded-lg" />
+      </div>
+      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+        <div className="border-b border-dashed border-gray-300 bg-gray-50 px-5 py-3 text-center">
+          <Skeleton className="mx-auto h-3 w-40" />
+        </div>
+        <dl className="divide-y divide-dashed divide-gray-200 px-5">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex justify-between py-2.5">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-28" />
+            </div>
+          ))}
+        </dl>
+        <div className="border-t-2 border-dashed border-gray-300 bg-gray-50 px-5 py-3">
+          <div className="flex justify-between">
+            <Skeleton className="h-4 w-12" />
+            <Skeleton className="h-4 w-20" />
+          </div>
+        </div>
+      </div>
+      <Skeleton className="h-12 w-full rounded-lg" />
+      <Skeleton className="h-32 w-full rounded-lg" />
+    </div>
+  )
+  if (!expense) return <p className="text-sm text-red-500">{t('notFound')}</p>
 
   return (
     <div className="space-y-6">
@@ -42,13 +78,13 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ id: st
           <StatusBadge status={expense.status} />
         </div>
 
-        {/* mobile: ações dropdown */}
+        {/* mobile: actions dropdown */}
         <div className="relative sm:hidden" ref={actionsRef}>
           <button
             onClick={() => setActionsOpen((o) => !o)}
             className="inline-flex items-center rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
-            Ações
+            {tCommon('actions')}
             <svg className={`ml-1.5 h-4 w-4 transition-transform ${actionsOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
@@ -65,7 +101,7 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ id: st
                       className="inline-flex w-full items-center rounded px-3 py-2 hover:bg-gray-100"
                       onClick={() => setActionsOpen(false)}
                     >
-                      Ver Comprovante
+                      {t('viewReceipt')}
                     </a>
                   </li>
                 )}
@@ -75,7 +111,7 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ id: st
                     className="inline-flex w-full items-center rounded px-3 py-2 hover:bg-gray-100"
                     onClick={() => setActionsOpen(false)}
                   >
-                    ← Voltar
+                    {tCommon('back')}
                   </Link>
                 </li>
               </ul>
@@ -83,7 +119,7 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ id: st
           )}
         </div>
 
-        {/* desktop: botões individuais */}
+        {/* desktop: individual buttons */}
         <div className="hidden shrink-0 items-center gap-2 sm:flex">
           {expense.fileUrl && (
             <a
@@ -92,70 +128,68 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ id: st
               rel="noopener noreferrer"
               className="rounded-lg border border-emerald-600 bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
             >
-              Ver Comprovante
+              {t('viewReceipt')}
             </a>
           )}
           <Link
             href="/dashboard"
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
-            ← Voltar
+            {tCommon('back')}
           </Link>
         </div>
       </div>
 
       <div className="space-y-4">
-          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-            <div className="border-b border-dashed border-gray-300 bg-gray-50 px-5 py-3 text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Comprovante de Despesa</p>
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-dashed border-gray-300 bg-gray-50 px-5 py-3 text-center">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{t('receiptCardTitle')}</p>
+          </div>
+          <dl className="divide-y divide-dashed divide-gray-200 px-5 text-sm">
+            <div className="flex justify-between py-2.5">
+              <dt className="text-gray-500">{t('vendor')}</dt>
+              <dd className="font-medium">{expense.extractedVendor ?? '—'}</dd>
             </div>
-            <dl className="divide-y divide-dashed divide-gray-200 px-5 text-sm">
+            <div className="flex justify-between py-2.5">
+              <dt className="text-gray-500">{t('date')}</dt>
+              <dd>{formatDate(expense.extractedDate)}</dd>
+            </div>
+            <div className="flex justify-between py-2.5">
+              <dt className="text-gray-500">{t('category')}</dt>
+              <dd className="font-medium">{(expense.selectedCategory ?? expense.category)?.name ?? '—'}</dd>
+            </div>
+            {expense.extractedDescription && (
               <div className="flex justify-between py-2.5">
-                <dt className="text-gray-500">Fornecedor</dt>
-                <dd className="font-medium">{expense.extractedVendor ?? '—'}</dd>
+                <dt className="text-gray-500">{t('description')}</dt>
+                <dd className="max-w-[60%] text-right text-gray-700">{expense.extractedDescription}</dd>
               </div>
-              <div className="flex justify-between py-2.5">
-                <dt className="text-gray-500">Data</dt>
-                <dd>{formatDate(expense.extractedDate)}</dd>
-              </div>
-              <div className="flex justify-between py-2.5">
-                <dt className="text-gray-500">Categoria</dt>
-                <dd className="font-medium">{(expense.selectedCategory ?? expense.category)?.name ?? '—'}</dd>
-              </div>
-              {expense.extractedDescription && (
-                <div className="flex justify-between py-2.5">
-                  <dt className="text-gray-500">Descrição</dt>
-                  <dd className="max-w-[60%] text-right text-gray-700">{expense.extractedDescription}</dd>
-                </div>
-              )}
-            </dl>
-            <div className="border-t-2 border-dashed border-gray-300 bg-gray-50 px-5 py-3">
-              <div className="flex justify-between text-sm font-bold text-gray-800">
-                <span>TOTAL</span>
-                <span>{formatCurrency(expense.extractedAmount)}</span>
-              </div>
+            )}
+          </dl>
+          <div className="border-t-2 border-dashed border-gray-300 bg-gray-50 px-5 py-3">
+            <div className="flex justify-between text-sm font-bold text-gray-800">
+              <span>{t('total')}</span>
+              <span>{formatCurrency(expense.extractedAmount)}</span>
             </div>
           </div>
-
-          <CategoryMatchBadge
-            match={expense.categoryMatch}
-            categoryName={(expense.selectedCategory ?? expense.category)?.name}
-            categoryExceedsLimit={expense.categoryExceedsLimit}
-            categoryExceedsLimitDetail={expense.categoryExceedsLimitDetail}
-          />
-
-          {expense.fraudSignals && (
-            <FraudSignalsCard signals={expense.fraudSignals} fraudScore={expense.fraudScore} fraudDetails={expense.fraudDetails} />
-          )}
-
-          {expense.rejectionReason && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-              <strong>Motivo da Rejeição:</strong> {expense.rejectionReason}
-            </div>
-          )}
-
-
         </div>
+
+        <CategoryMatchBadge
+          match={expense.categoryMatch}
+          categoryName={(expense.selectedCategory ?? expense.category)?.name}
+          categoryExceedsLimit={expense.categoryExceedsLimit}
+          categoryExceedsLimitDetail={expense.categoryExceedsLimitDetail}
+        />
+
+        {expense.fraudSignals && (
+          <FraudSignalsCard signals={expense.fraudSignals} fraudScore={expense.fraudScore} fraudDetails={expense.fraudDetails} />
+        )}
+
+        {expense.rejectionReason && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            <strong>{t('rejectionReason')}:</strong> {expense.rejectionReason}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

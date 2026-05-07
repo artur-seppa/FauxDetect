@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslations } from 'next-intl'
 import { useAuth } from '@/hooks/use-auth'
 import { useAuthContext } from '@/contexts/auth-context'
 
 const schema = z.object({
-  email: z.email({ error: 'E-mail inválido' }),
-  password: z.string().min(8, { error: 'Mínimo 8 caracteres' }),
+  email: z.email(),
+  password: z.string().min(8),
 })
 
 type FormData = z.infer<typeof schema>
@@ -20,6 +21,7 @@ export default function LoginPage() {
   const { login } = useAuth()
   const { refreshUser } = useAuthContext()
   const [error, setError] = useState<string | null>(null)
+  const t = useTranslations('login')
 
   const {
     register,
@@ -34,7 +36,7 @@ export default function LoginPage() {
       refreshUser()
       router.push(user.role === 'employee' ? '/dashboard' : '/hr/dashboard')
     } catch {
-      setError('E-mail ou senha inválidos.')
+      setError(t('error'))
     }
   }
 
@@ -43,13 +45,13 @@ export default function LoginPage() {
       <div className="w-full max-w-sm space-y-6 rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
         <div className="space-y-1 text-center">
           <h1 className="text-2xl font-bold text-gray-900">FauxDetect</h1>
-          <p className="text-sm text-gray-500">Entre com sua conta</p>
+          <p className="text-sm text-gray-500">{t('subtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
           <div className="space-y-1">
             <label className="text-sm font-medium text-gray-700" htmlFor="email">
-              E-mail
+              {t('email')}
             </label>
             <input
               id="email"
@@ -63,7 +65,7 @@ export default function LoginPage() {
 
           <div className="space-y-1">
             <label className="text-sm font-medium text-gray-700" htmlFor="password">
-              Senha
+              {t('password')}
             </label>
             <input
               id="password"
@@ -82,7 +84,7 @@ export default function LoginPage() {
             disabled={isSubmitting}
             className="w-full rounded-lg bg-emerald-600 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
           >
-            {isSubmitting ? 'Entrando…' : 'Entrar'}
+            {isSubmitting ? t('submitting') : t('submit')}
           </button>
         </form>
       </div>

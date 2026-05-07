@@ -1,0 +1,173 @@
+{
+  "metadata": {
+    "title": "FauxDetect — Reembolso de Despesas",
+    "description": "Sistema de reembolso com detecção de fraude por IA"
+  },
+  "common": {
+    "loading": "Carregando…",
+    "notFound": "Não encontrado.",
+    "back": "← Voltar",
+    "save": "Salvar",
+    "saving": "Salvando…",
+    "cancel": "Cancelar",
+    "actions": "Ações"
+  },
+  "status": {
+    "processing": "Processando",
+    "pending": "Pendente",
+    "approved": "Aprovado",
+    "rejected": "Rejeitado",
+    "manual_review": "Revisão Manual"
+  },
+  "nav": {
+    "logout": "Sair",
+    "employee": {
+      "myExpenses": "Minhas Despesas"
+    },
+    "hr": {
+      "dashboard": "Dashboard",
+      "expenses": "Despesas",
+      "categories": "Categorias"
+    }
+  },
+  "login": {
+    "subtitle": "Entre com sua conta",
+    "email": "E-mail",
+    "password": "Senha",
+    "submit": "Entrar",
+    "submitting": "Entrando…",
+    "error": "E-mail ou senha inválidos.",
+    "emailInvalid": "E-mail inválido",
+    "passwordMin": "Mínimo 8 caracteres"
+  },
+  "employeeDashboard": {
+    "title": "Minhas Despesas",
+    "newExpense": "Nova Despesa",
+    "empty": "Nenhuma despesa encontrada.",
+    "columns": {
+      "file": "Arquivo",
+      "amount": "Valor",
+      "date": "Data",
+      "status": "Status"
+    },
+    "view": "Ver",
+    "drawer": {
+      "title": "Nova Despesa",
+      "receipt": "Comprovante",
+      "receiptHint": "JPG, PNG ou PDF — máx. 5 MB",
+      "category": "Categoria",
+      "categoryPlaceholder": "Selecione uma categoria",
+      "description": "Descrição",
+      "descriptionOptional": "(opcional)",
+      "descriptionPlaceholder": "Ex.: almoço com cliente da empresa X",
+      "submit": "Enviar Despesa",
+      "submitting": "Enviando…",
+      "error": "Erro ao enviar despesa."
+    }
+  },
+  "expenseDetail": {
+    "notFound": "Despesa não encontrada.",
+    "viewReceipt": "Ver Comprovante",
+    "receiptCardTitle": "Comprovante de Despesa",
+    "vendor": "Fornecedor",
+    "date": "Data",
+    "category": "Categoria",
+    "description": "Descrição",
+    "total": "TOTAL",
+    "rejectionReason": "Motivo da Rejeição"
+  },
+  "hrDashboard": {
+    "title": "Dashboard RH",
+    "pending": "Pendentes",
+    "manualReview": "Em Revisão",
+    "approvedToday": "Aprovados Hoje",
+    "rejectedToday": "Rejeitados Hoje",
+    "expensesByDay": "Despesas nos últimos 30 dias",
+    "expensesByUser": "Despesas por colaborador",
+    "statusDistribution": "Distribuição de status",
+    "fraudSignals": "Sinais de fraude detectados"
+  },
+  "hrExpenses": {
+    "title": "Despesas",
+    "empty": "Nenhuma despesa encontrada.",
+    "filterAll": "Todos",
+    "columns": {
+      "employee": "Funcionário",
+      "file": "Arquivo",
+      "amount": "Valor",
+      "date": "Data",
+      "category": "Categoria",
+      "score": "Score",
+      "status": "Status"
+    },
+    "review": "Revisar"
+  },
+  "hrExpenseDetail": {
+    "notFound": "Despesa não encontrada.",
+    "viewReceipt": "Ver Comprovante",
+    "receiptCardTitle": "Comprovante de Despesa",
+    "employee": "Funcionário",
+    "vendor": "Fornecedor",
+    "date": "Data",
+    "category": "Categoria",
+    "description": "Descrição",
+    "total": "TOTAL",
+    "rejectionReason": "Motivo da Rejeição",
+    "rejectionPlaceholder": "Motivo da rejeição…",
+    "confirmReject": "Confirmar Rejeição",
+    "rejecting": "Rejeitando…",
+    "approve": "Aprovar",
+    "approving": "Aprovando…",
+    "reject": "Rejeitar"
+  },
+  "categories": {
+    "title": "Categorias",
+    "newCategory": "Nova Categoria",
+    "editCategory": "Editar Categoria",
+    "empty": "Nenhuma categoria cadastrada.",
+    "columns": {
+      "name": "Nome",
+      "keywords": "Keywords",
+      "limit": "Limite",
+      "status": "Status"
+    },
+    "active": "Ativa",
+    "inactive": "Inativa",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "form": {
+      "name": "Nome",
+      "keywords": "Keywords",
+      "keywordsHint": "Separe as keywords por vírgula.",
+      "limit": "Limite (R$)",
+      "limitHint": "Deixe em branco para sem limite.",
+      "saveError": "Ocorreu um erro ao salvar. Tente novamente."
+    },
+    "deleteModal": {
+      "title": "Excluir categoria",
+      "description": "Tem certeza que deseja excluir \"{name}\"? Essa ação não pode ser desfeita.",
+      "confirm": "Excluir",
+      "deleting": "Excluindo…"
+    }
+  },
+  "fraudSignals": {
+    "title": "Sinais de Fraude",
+    "detected": "Detectado",
+    "ok": "OK",
+    "amountExceedsCategoryLimit": "Valor acima do limite",
+    "geminiDigitalTampering": "Adulteração digital",
+    "geminiAiGenerated": "Gerado por IA",
+    "geminiNotADocument": "Não é documento",
+    "geminiInconsistentData": "Dados inconsistentes"
+  },
+  "categoryMatch": {
+    "title": "Categoria",
+    "matchOk": "Corresponde à categoria \"{name}\"",
+    "matchFail": "Não corresponde à categoria \"{name}\"",
+    "matchOkNoName": "Corresponde à categoria",
+    "matchFailNoName": "Não corresponde à categoria",
+    "withinLimit": "Valor dentro do limite da categoria",
+    "ok": "OK",
+    "attention": "Atenção"
+  }
+}

@@ -203,11 +203,11 @@ export default class ExpensesController {
       statusDistribution: statusDistResult.rows,
       expensesByUser: expensesByUserResult.rows,
       fraudSignalCounts: [
-        { signal: 'Valor acima do limite', total: fraudRow.amount_exceeds_category_limit ?? 0 },
-        { signal: 'Adulteração digital', total: fraudRow.gemini_digital_tampering ?? 0 },
-        { signal: 'Gerado por IA', total: fraudRow.gemini_ai_generated ?? 0 },
-        { signal: 'Não é documento', total: fraudRow.gemini_not_a_document ?? 0 },
-        { signal: 'Dados inconsistentes', total: fraudRow.gemini_inconsistent_data ?? 0 },
+        { signal: 'amountExceedsCategoryLimit', total: fraudRow.amount_exceeds_category_limit ?? 0 },
+        { signal: 'geminiDigitalTampering', total: fraudRow.gemini_digital_tampering ?? 0 },
+        { signal: 'geminiAiGenerated', total: fraudRow.gemini_ai_generated ?? 0 },
+        { signal: 'geminiNotADocument', total: fraudRow.gemini_not_a_document ?? 0 },
+        { signal: 'geminiInconsistentData', total: fraudRow.gemini_inconsistent_data ?? 0 },
       ],
       expensesByDay: expensesByDayResult.rows,
     })

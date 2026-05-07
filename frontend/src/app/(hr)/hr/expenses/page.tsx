@@ -4,23 +4,27 @@ import { useState, useRef, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { api } from '@/lib/api'
 import type { Expense } from '@/lib/types'
 import { StatusBadge } from '@/components/status-badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { formatCurrency, formatDate } from '@/lib/utils'
-
-const STATUS_OPTIONS = [
-  { value: '', label: 'Todos' },
-  { value: 'pending', label: 'Pendente' },
-  { value: 'manual_review', label: 'Revisão Manual' },
-  { value: 'approved', label: 'Aprovado' },
-  { value: 'rejected', label: 'Rejeitado' },
-]
 
 export default function HrExpensesPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const status = searchParams.get('status') ?? ''
+  const t = useTranslations('hrExpenses')
+  const tStatus = useTranslations('status')
+
+  const STATUS_OPTIONS = [
+    { value: '', label: t('filterAll') },
+    { value: 'pending', label: tStatus('pending') },
+    { value: 'manual_review', label: tStatus('manual_review') },
+    { value: 'approved', label: tStatus('approved') },
+    { value: 'rejected', label: tStatus('rejected') },
+  ]
 
   const [filterOpen, setFilterOpen] = useState(false)
   const filterRef = useRef<HTMLDivElement>(null)
@@ -43,9 +47,24 @@ export default function HrExpensesPage() {
         .then((r) => r.data),
   })
 
+  const tableHead = (
+    <thead className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+      <tr>
+        <th className="px-4 py-3">{t('columns.employee')}</th>
+        <th className="px-4 py-3">{t('columns.file')}</th>
+        <th className="px-4 py-3">{t('columns.amount')}</th>
+        <th className="px-4 py-3">{t('columns.date')}</th>
+        <th className="px-4 py-3">{t('columns.category')}</th>
+        <th className="px-4 py-3">{t('columns.score')}</th>
+        <th className="px-4 py-3">{t('columns.status')}</th>
+        <th className="px-4 py-3"></th>
+      </tr>
+    </thead>
+  )
+
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold">Despesas</h1>
+      <h1 className="text-xl font-semibold">{t('title')}</h1>
 
       {/* mobile: custom dropdown */}
       <div className="relative sm:hidden" ref={filterRef}>
@@ -100,65 +119,74 @@ export default function HrExpensesPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-gray-500">Carregando…</p>
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[700px] text-sm">
+              {tableHead}
+              <tbody className="divide-y divide-gray-100">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-4 py-3"><Skeleton className="h-4 w-28" /></td>
+                    <td className="px-4 py-3"><Skeleton className="h-4 w-36" /></td>
+                    <td className="px-4 py-3"><Skeleton className="h-4 w-16" /></td>
+                    <td className="px-4 py-3"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-4 py-3"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-4 py-3"><Skeleton className="h-4 w-8" /></td>
+                    <td className="px-4 py-3"><Skeleton className="h-5 w-20 rounded-full" /></td>
+                    <td className="px-4 py-3 text-right"><Skeleton className="ml-auto h-6 w-14 rounded-lg" /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       ) : !data?.length ? (
-        <p className="text-sm text-gray-500">Nenhuma despesa encontrada.</p>
+        <p className="text-sm text-gray-500">{t('empty')}</p>
       ) : (
         <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
           <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px] text-sm">
-            <thead className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-              <tr>
-                <th className="px-4 py-3">Funcionário</th>
-                <th className="px-4 py-3">Arquivo</th>
-                <th className="px-4 py-3">Valor</th>
-                <th className="px-4 py-3">Data</th>
-                <th className="px-4 py-3">Categoria</th>
-                <th className="px-4 py-3">Score</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {(data ?? []).map((expense: Expense) => (
-                <tr key={expense.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">{expense.user?.fullName ?? '—'}</td>
-                  <td className="px-4 py-3 font-medium">
-                    <span className="block max-w-[220px] truncate" title={expense.originalFilename}>
-                      {expense.originalFilename}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">{formatCurrency(expense.extractedAmount)}</td>
-                  <td className="px-4 py-3">{formatDate(expense.extractedDate)}</td>
-                  <td className="px-4 py-3">{(expense.selectedCategory ?? expense.category)?.name ?? '—'}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={
-                        expense.fraudScore >= 70
-                          ? 'font-bold text-red-600'
-                          : expense.fraudScore >= 40
-                            ? 'font-bold text-yellow-600'
-                            : 'text-green-600'
-                      }
-                    >
-                      {expense.fraudScore}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={expense.status} />
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => router.push(`/hr/expenses/${expense.id}`)}
-                      className="rounded-lg border border-emerald-600 px-3 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
-                    >
-                      Revisar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            <table className="w-full min-w-[700px] text-sm">
+              {tableHead}
+              <tbody className="divide-y divide-gray-100">
+                {(data ?? []).map((expense: Expense) => (
+                  <tr key={expense.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3">{expense.user?.fullName ?? '—'}</td>
+                    <td className="px-4 py-3 font-medium">
+                      <span className="block max-w-[220px] truncate" title={expense.originalFilename}>
+                        {expense.originalFilename}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">{formatCurrency(expense.extractedAmount)}</td>
+                    <td className="px-4 py-3">{formatDate(expense.extractedDate)}</td>
+                    <td className="px-4 py-3">{(expense.selectedCategory ?? expense.category)?.name ?? '—'}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={
+                          expense.fraudScore >= 70
+                            ? 'font-bold text-red-600'
+                            : expense.fraudScore >= 40
+                              ? 'font-bold text-yellow-600'
+                              : 'text-green-600'
+                        }
+                      >
+                        {expense.fraudScore}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={expense.status} />
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => router.push(`/hr/expenses/${expense.id}`)}
+                        className="rounded-lg border border-emerald-600 px-3 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
+                      >
+                        {t('review')}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

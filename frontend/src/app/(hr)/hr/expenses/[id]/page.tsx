@@ -4,17 +4,21 @@ import { use, useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { api } from '@/lib/api'
 import type { Expense } from '@/lib/types'
 import { StatusBadge } from '@/components/status-badge'
 import { FraudSignalsCard } from '@/components/fraud-signals-card'
 import { CategoryMatchBadge } from '@/components/category-match-badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
 export default function HrExpenseDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
   const queryClient = useQueryClient()
+  const t = useTranslations('hrExpenseDetail')
+  const tCommon = useTranslations('common')
   const [rejectionReason, setRejectionReason] = useState('')
   const [showRejectForm, setShowRejectForm] = useState(false)
   const [actionsOpen, setActionsOpen] = useState(false)
@@ -53,8 +57,39 @@ export default function HrExpenseDetailPage({ params }: { params: Promise<{ id: 
     },
   })
 
-  if (isLoading) return <p className="text-sm text-gray-500">Carregando…</p>
-  if (!expense) return <p className="text-sm text-red-500">Despesa não encontrada.</p>
+  if (isLoading) return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-7 w-48" />
+          <Skeleton className="h-5 w-20 rounded-full" />
+        </div>
+        <Skeleton className="h-9 w-32 rounded-lg" />
+      </div>
+      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+        <div className="border-b border-dashed border-gray-300 bg-gray-50 px-5 py-3 text-center">
+          <Skeleton className="mx-auto h-3 w-40" />
+        </div>
+        <dl className="divide-y divide-dashed divide-gray-200 px-5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex justify-between py-2.5">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-28" />
+            </div>
+          ))}
+        </dl>
+        <div className="border-t-2 border-dashed border-gray-300 bg-gray-50 px-5 py-3">
+          <div className="flex justify-between">
+            <Skeleton className="h-4 w-12" />
+            <Skeleton className="h-4 w-20" />
+          </div>
+        </div>
+      </div>
+      <Skeleton className="h-12 w-full rounded-lg" />
+      <Skeleton className="h-32 w-full rounded-lg" />
+    </div>
+  )
+  if (!expense) return <p className="text-sm text-red-500">{t('notFound')}</p>
 
   const canReview = expense.status === 'pending' || expense.status === 'manual_review'
 
@@ -66,13 +101,13 @@ export default function HrExpenseDetailPage({ params }: { params: Promise<{ id: 
           <StatusBadge status={expense.status} />
         </div>
 
-        {/* mobile: ações dropdown */}
+        {/* mobile: actions dropdown */}
         <div className="relative sm:hidden" ref={actionsRef}>
           <button
             onClick={() => setActionsOpen((o) => !o)}
             className="inline-flex items-center rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
-            Ações
+            {tCommon('actions')}
             <svg className={`ml-1.5 h-4 w-4 transition-transform ${actionsOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
@@ -89,7 +124,7 @@ export default function HrExpenseDetailPage({ params }: { params: Promise<{ id: 
                       className="inline-flex w-full items-center rounded px-3 py-2 hover:bg-gray-100"
                       onClick={() => setActionsOpen(false)}
                     >
-                      Ver Comprovante
+                      {t('viewReceipt')}
                     </a>
                   </li>
                 )}
@@ -99,7 +134,7 @@ export default function HrExpenseDetailPage({ params }: { params: Promise<{ id: 
                     className="inline-flex w-full items-center rounded px-3 py-2 hover:bg-gray-100"
                     onClick={() => setActionsOpen(false)}
                   >
-                    ← Voltar
+                    {tCommon('back')}
                   </Link>
                 </li>
               </ul>
@@ -107,7 +142,7 @@ export default function HrExpenseDetailPage({ params }: { params: Promise<{ id: 
           )}
         </div>
 
-        {/* desktop: botões individuais */}
+        {/* desktop: individual buttons */}
         <div className="hidden shrink-0 items-center gap-2 sm:flex">
           {expense.fileUrl && (
             <a
@@ -116,14 +151,14 @@ export default function HrExpenseDetailPage({ params }: { params: Promise<{ id: 
               rel="noopener noreferrer"
               className="rounded-lg border border-emerald-600 bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
             >
-              Ver Comprovante
+              {t('viewReceipt')}
             </a>
           )}
           <Link
             href="/hr/expenses"
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
-            ← Voltar
+            {tCommon('back')}
           </Link>
         </div>
       </div>
@@ -131,35 +166,35 @@ export default function HrExpenseDetailPage({ params }: { params: Promise<{ id: 
       <div className="space-y-4">
         <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
           <div className="border-b border-dashed border-gray-300 bg-gray-50 px-5 py-3 text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Comprovante de Despesa</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{t('receiptCardTitle')}</p>
           </div>
           <dl className="divide-y divide-dashed divide-gray-200 px-5 text-sm">
             <div className="flex justify-between py-2.5">
-              <dt className="text-gray-500">Funcionário</dt>
+              <dt className="text-gray-500">{t('employee')}</dt>
               <dd className="font-medium">{expense.user?.fullName ?? '—'}</dd>
             </div>
             <div className="flex justify-between py-2.5">
-              <dt className="text-gray-500">Fornecedor</dt>
+              <dt className="text-gray-500">{t('vendor')}</dt>
               <dd className="font-medium">{expense.extractedVendor ?? '—'}</dd>
             </div>
             <div className="flex justify-between py-2.5">
-              <dt className="text-gray-500">Data</dt>
+              <dt className="text-gray-500">{t('date')}</dt>
               <dd>{formatDate(expense.extractedDate)}</dd>
             </div>
             <div className="flex justify-between py-2.5">
-              <dt className="text-gray-500">Categoria</dt>
+              <dt className="text-gray-500">{t('category')}</dt>
               <dd className="font-medium">{(expense.selectedCategory ?? expense.category)?.name ?? '—'}</dd>
             </div>
             {expense.extractedDescription && (
               <div className="flex justify-between py-2.5">
-                <dt className="text-gray-500">Descrição</dt>
+                <dt className="text-gray-500">{t('description')}</dt>
                 <dd className="max-w-[60%] text-right text-gray-700">{expense.extractedDescription}</dd>
               </div>
             )}
           </dl>
           <div className="border-t-2 border-dashed border-gray-300 bg-gray-50 px-5 py-3">
             <div className="flex justify-between text-sm font-bold text-gray-800">
-              <span>TOTAL</span>
+              <span>{t('total')}</span>
               <span>{formatCurrency(expense.extractedAmount)}</span>
             </div>
           </div>
@@ -178,7 +213,7 @@ export default function HrExpenseDetailPage({ params }: { params: Promise<{ id: 
 
         {expense.rejectionReason && (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            <strong>Motivo da Rejeição:</strong> {expense.rejectionReason}
+            <strong>{t('rejectionReason')}:</strong> {expense.rejectionReason}
           </div>
         )}
 
@@ -189,7 +224,7 @@ export default function HrExpenseDetailPage({ params }: { params: Promise<{ id: 
                 <textarea
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
-                  placeholder="Motivo da rejeição…"
+                  placeholder={t('rejectionPlaceholder')}
                   rows={3}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
                 />
@@ -199,13 +234,13 @@ export default function HrExpenseDetailPage({ params }: { params: Promise<{ id: 
                     disabled={!rejectionReason.trim() || reject.isPending}
                     className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
                   >
-                    {reject.isPending ? 'Rejeitando…' : 'Confirmar Rejeição'}
+                    {reject.isPending ? t('rejecting') : t('confirmReject')}
                   </button>
                   <button
                     onClick={() => setShowRejectForm(false)}
                     className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
                   >
-                    Cancelar
+                    {tCommon('cancel')}
                   </button>
                 </div>
               </div>
@@ -216,13 +251,13 @@ export default function HrExpenseDetailPage({ params }: { params: Promise<{ id: 
                   disabled={approve.isPending}
                   className="flex-1 rounded-lg bg-green-600 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60"
                 >
-                  {approve.isPending ? 'Aprovando…' : 'Aprovar'}
+                  {approve.isPending ? t('approving') : t('approve')}
                 </button>
                 <button
                   onClick={() => setShowRejectForm(true)}
                   className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-semibold text-white hover:bg-red-700"
                 >
-                  Rejeitar
+                  {t('reject')}
                 </button>
               </div>
             )}

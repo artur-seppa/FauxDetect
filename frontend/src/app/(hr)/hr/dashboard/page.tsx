@@ -16,16 +16,10 @@ import {
   CartesianGrid,
   Legend,
 } from 'recharts'
+import { useTranslations } from 'next-intl'
 import { api } from '@/lib/api'
 import type { HrDashboard } from '@/lib/types'
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: 'Pendente',
-  approved: 'Aprovado',
-  rejected: 'Rejeitado',
-  manual_review: 'Em Revisão',
-  processing: 'Processando',
-}
+import { Skeleton } from '@/components/ui/skeleton'
 
 const STATUS_COLORS: Record<string, string> = {
   pending: '#f59e0b',
@@ -58,38 +52,71 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
 }
 
 export default function HrDashboardPage() {
+  const t = useTranslations('hrDashboard')
+  const tStatus = useTranslations('status')
+  const tSignals = useTranslations('fraudSignals')
+
   const { data, isLoading } = useQuery({
     queryKey: ['hr-dashboard'],
     queryFn: () => api.get<HrDashboard>('/hr/dashboard').then((r) => r.data),
+    staleTime: 60 * 1000,
   })
 
-  if (isLoading) return <p className="text-sm text-gray-500">Carregando…</p>
+  if (isLoading) return (
+    <div className="space-y-6">
+      <Skeleton className="h-7 w-36" />
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm space-y-3">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-8 w-12" />
+          </div>
+        ))}
+      </div>
+      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+        <Skeleton className="h-4 w-48" />
+        <Skeleton className="h-40 w-full sm:h-[200px]" />
+      </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div key={i} className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-52 w-full sm:h-[260px]" />
+          </div>
+        ))}
+      </div>
+      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+        <Skeleton className="h-4 w-44" />
+        <Skeleton className="h-44 w-full sm:h-[220px]" />
+      </div>
+    </div>
+  )
 
   const statusData = (data?.statusDistribution ?? []).map((s) => ({
-    name: STATUS_LABELS[s.status] ?? s.status,
+    name: tStatus(s.status as any),
     value: s.total,
     fill: STATUS_COLORS[s.status] ?? '#6b7280',
   }))
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold">Dashboard RH</h1>
+      <h1 className="text-xl font-semibold">{t('title')}</h1>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Pendentes" value={data?.pending ?? 0} href="/hr/expenses?status=pending" />
-        <StatCard label="Em Revisão" value={data?.manualReview ?? 0} href="/hr/expenses?status=manual_review" />
-        <StatCard label="Aprovados Hoje" value={data?.approvedToday ?? 0} href="/hr/expenses?status=approved" />
-        <StatCard label="Rejeitados Hoje" value={data?.rejectedToday ?? 0} href="/hr/expenses?status=rejected" />
+        <StatCard label={t('pending')} value={data?.pending ?? 0} href="/hr/expenses?status=pending" />
+        <StatCard label={t('manualReview')} value={data?.manualReview ?? 0} href="/hr/expenses?status=manual_review" />
+        <StatCard label={t('approvedToday')} value={data?.approvedToday ?? 0} href="/hr/expenses?status=approved" />
+        <StatCard label={t('rejectedToday')} value={data?.rejectedToday ?? 0} href="/hr/expenses?status=rejected" />
       </div>
 
-      <ChartCard title="Despesas nos últimos 30 dias">
+      <ChartCard title={t('expensesByDay')}>
         <div className="h-40 sm:h-[200px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data?.expensesByDay ?? []}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="day" tick={{ fontSize: 11 }} tickFormatter={(v) => v.slice(5)} />
               <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={28} />
-              <Tooltip labelFormatter={(v) => `Data: ${v}`} formatter={(v) => [v, 'Despesas']} />
+              <Tooltip labelFormatter={(v) => `${v}`} formatter={(v) => [v, t('expensesByDay')]} />
               <Line type="monotone" dataKey="total" stroke={TEAL} strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
@@ -97,7 +124,7 @@ export default function HrDashboardPage() {
       </ChartCard>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <ChartCard title="Despesas por colaborador">
+        <ChartCard title={t('expensesByUser')}>
           <div className="h-52 sm:h-[260px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -108,14 +135,14 @@ export default function HrDashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                 <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
                 <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 10 }} />
-                <Tooltip formatter={(v) => [v, 'Despesas']} />
+                <Tooltip formatter={(v) => [v, t('expensesByUser')]} />
                 <Bar dataKey="total" fill={TEAL} radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </ChartCard>
 
-        <ChartCard title="Distribuição de status">
+        <ChartCard title={t('statusDistribution')}>
           <div className="h-52 sm:h-[260px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -136,7 +163,7 @@ export default function HrDashboardPage() {
         </ChartCard>
       </div>
 
-      <ChartCard title="Sinais de fraude detectados">
+      <ChartCard title={t('fraudSignals')}>
         <div className="h-44 sm:h-[220px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data?.fraudSignalCounts ?? []} margin={{ bottom: 4 }}>
@@ -148,9 +175,10 @@ export default function HrDashboardPage() {
                 textAnchor="end"
                 height={54}
                 interval={0}
+                tickFormatter={(key) => tSignals(key as any)}
               />
               <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={28} />
-              <Tooltip formatter={(v) => [v, 'Ocorrências']} />
+              <Tooltip formatter={(v) => [v, t('fraudSignals')]} />
               <Bar dataKey="total" fill={RED} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
