@@ -1,3 +1,7 @@
+'use client'
+
+import { useTranslations } from 'next-intl'
+
 interface CategoryMatchBadgeProps {
   match: boolean | null
   categoryName?: string | null
@@ -11,16 +15,17 @@ export function CategoryMatchBadge({
   categoryExceedsLimit,
   categoryExceedsLimitDetail,
 }: CategoryMatchBadgeProps) {
+  const t = useTranslations('categoryMatch')
   const matchOk = match ?? false
+
+  const matchLabel = categoryName
+    ? t(matchOk ? 'matchOk' : 'matchFail', { name: categoryName })
+    : t(matchOk ? 'matchOkNoName' : 'matchFailNoName')
+
   const rows: { label: string; ok: boolean; detail?: string }[] = [
+    { label: matchLabel, ok: matchOk },
     {
-      label: matchOk
-        ? `Corresponde à categoria${categoryName ? ` "${categoryName}"` : ''}`
-        : `Não corresponde à categoria${categoryName ? ` "${categoryName}"` : ''}`,
-      ok: matchOk,
-    },
-    {
-      label: 'Valor dentro do limite da categoria',
+      label: t('withinLimit'),
       ok: categoryExceedsLimit !== true,
       detail: categoryExceedsLimitDetail ?? undefined,
     },
@@ -28,7 +33,7 @@ export function CategoryMatchBadge({
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4">
-      <h3 className="mb-3 font-semibold text-gray-900">Categoria</h3>
+      <h3 className="mb-3 font-semibold text-gray-900">{t('title')}</h3>
       <ul className="space-y-1.5">
         {rows.map((row) => (
           <li
@@ -50,7 +55,7 @@ export function CategoryMatchBadge({
                 row.ok ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
               }`}
             >
-              {row.ok ? 'OK' : 'Atenção'}
+              {row.ok ? t('ok') : t('attention')}
             </span>
           </li>
         ))}

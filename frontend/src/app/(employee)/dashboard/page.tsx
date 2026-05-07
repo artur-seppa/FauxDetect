@@ -3,10 +3,12 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { api } from '@/lib/api'
 import type { Category, Expense } from '@/lib/types'
 import { StatusBadge } from '@/components/status-badge'
 import { Drawer } from '@/components/drawer'
+import { Skeleton } from '@/components/ui/skeleton'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
 export default function EmployeeDashboardPage() {
@@ -16,11 +18,14 @@ export default function EmployeeDashboardPage() {
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
 
+  const t = useTranslations('employeeDashboard')
   const queryClient = useQueryClient()
 
   const { data, isLoading } = useQuery({
     queryKey: ['expenses'],
     queryFn: () => api.get<Expense[]>('/expenses').then((r) => r.data),
+    refetchInterval: (query) =>
+      query.state.data?.some((e) => e.status === 'processing') ? 2000 : false,
   })
 
   const { data: categories } = useQuery({
@@ -47,7 +52,7 @@ export default function EmployeeDashboardPage() {
     onError: (err: unknown) => {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        'Erro ao enviar despesa.'
+        t('drawer.error')
       setError(msg)
     },
   })
@@ -58,65 +63,84 @@ export default function EmployeeDashboardPage() {
     setError(null)
   }
 
+  const tableHead = (
+    <thead className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+      <tr>
+        <th className="px-4 py-3">{t('columns.file')}</th>
+        <th className="px-4 py-3">{t('columns.amount')}</th>
+        <th className="px-4 py-3">{t('columns.date')}</th>
+        <th className="px-4 py-3">{t('columns.status')}</th>
+        <th className="px-4 py-3"></th>
+      </tr>
+    </thead>
+  )
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Minhas Despesas</h1>
+        <h1 className="text-xl font-semibold">{t('title')}</h1>
         <button
           onClick={() => setDrawerOpen(true)}
           className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
         >
-          Nova Despesa
+          {t('newExpense')}
         </button>
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-gray-500">Carregando…</p>
-      ) : !data?.length ? (
-        <p className="text-sm text-gray-500">Nenhuma despesa encontrada.</p>
-      ) : (
         <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-          <div className="overflow-x-auto">
           <table className="w-full min-w-[500px] text-sm">
-            <thead className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-              <tr>
-                <th className="px-4 py-3">Arquivo</th>
-                <th className="px-4 py-3">Valor</th>
-                <th className="px-4 py-3">Data</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3"></th>
-              </tr>
-            </thead>
+            {tableHead}
             <tbody className="divide-y divide-gray-100">
-              {data.map((expense: Expense) => (
-                <tr key={expense.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium">
-                    <span className="block max-w-[220px] truncate" title={expense.originalFilename}>
-                      {expense.originalFilename}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">{formatCurrency(expense.extractedAmount)}</td>
-                  <td className="px-4 py-3">{formatDate(expense.extractedDate)}</td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={expense.status} />
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/expenses/${expense.id}`}
-                      className="rounded-md border border-blue-500 px-3 py-1 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-50"
-                    >
-                      Ver
-                    </Link>
-                  </td>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <tr key={i}>
+                  <td className="px-4 py-3"><Skeleton className="h-4 w-40" /></td>
+                  <td className="px-4 py-3"><Skeleton className="h-4 w-16" /></td>
+                  <td className="px-4 py-3"><Skeleton className="h-4 w-20" /></td>
+                  <td className="px-4 py-3"><Skeleton className="h-5 w-20 rounded-full" /></td>
+                  <td className="px-4 py-3 text-right"><Skeleton className="ml-auto h-6 w-10 rounded-md" /></td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      ) : !data?.length ? (
+        <p className="text-sm text-gray-500">{t('empty')}</p>
+      ) : (
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[500px] text-sm">
+              {tableHead}
+              <tbody className="divide-y divide-gray-100">
+                {data.map((expense: Expense) => (
+                  <tr key={expense.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 font-medium">
+                      <span className="block max-w-[220px] truncate" title={expense.originalFilename}>
+                        {expense.originalFilename}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">{formatCurrency(expense.extractedAmount)}</td>
+                    <td className="px-4 py-3">{formatDate(expense.extractedDate)}</td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={expense.status} />
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Link
+                        href={`/expenses/${expense.id}`}
+                        className="rounded-md border border-blue-500 px-3 py-1 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-50"
+                      >
+                        {t('view')}
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
 
-      <Drawer open={drawerOpen} onClose={handleClose} title="Nova Despesa">
+      <Drawer open={drawerOpen} onClose={handleClose} title={t('drawer.title')}>
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -127,7 +151,7 @@ export default function EmployeeDashboardPage() {
           className="space-y-5"
         >
           <div className="space-y-1">
-            <label className="text-sm font-medium">Comprovante</label>
+            <label className="text-sm font-medium">{t('drawer.receipt')}</label>
             <input
               type="file"
               accept=".jpg,.jpeg,.png,.pdf"
@@ -135,18 +159,18 @@ export default function EmployeeDashboardPage() {
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
             />
-            <p className="text-xs text-gray-400">JPG, PNG ou PDF — máx. 5 MB</p>
+            <p className="text-xs text-gray-400">{t('drawer.receiptHint')}</p>
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium">Categoria</label>
+            <label className="text-sm font-medium">{t('drawer.category')}</label>
             <select
               required
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
             >
-              <option value="">Selecione uma categoria</option>
+              <option value="">{t('drawer.categoryPlaceholder')}</option>
               {categories?.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -157,13 +181,13 @@ export default function EmployeeDashboardPage() {
 
           <div className="space-y-1">
             <label className="text-sm font-medium">
-              Descrição{' '}
-              <span className="font-normal text-gray-400">(opcional)</span>
+              {t('drawer.description')}{' '}
+              <span className="font-normal text-gray-400">{t('drawer.descriptionOptional')}</span>
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Ex.: almoço com cliente da empresa X"
+              placeholder={t('drawer.descriptionPlaceholder')}
               maxLength={500}
               rows={3}
               className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm"
@@ -176,9 +200,15 @@ export default function EmployeeDashboardPage() {
           <button
             type="submit"
             disabled={submit.isPending || !file || !categoryId}
-            className="w-full rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
           >
-            {submit.isPending ? 'Enviando…' : 'Enviar Despesa'}
+            {submit.isPending && (
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+              </svg>
+            )}
+            {submit.isPending ? t('drawer.submitting') : t('drawer.submit')}
           </button>
         </form>
       </Drawer>

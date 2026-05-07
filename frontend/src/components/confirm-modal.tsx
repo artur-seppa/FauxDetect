@@ -8,6 +8,7 @@ interface ConfirmModalProps {
   title: string
   description: string
   confirmLabel?: string
+  cancelLabel?: string
   isPending?: boolean
   onConfirm: () => void
   onCancel: () => void
@@ -17,7 +18,8 @@ export function ConfirmModal({
   open,
   title,
   description,
-  confirmLabel = 'Confirmar',
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
   isPending = false,
   onConfirm,
   onCancel,
@@ -68,7 +70,7 @@ export function ConfirmModal({
             disabled={isPending}
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
           >
-            Cancelar
+            {cancelLabel}
           </button>
           <button
             type="button"

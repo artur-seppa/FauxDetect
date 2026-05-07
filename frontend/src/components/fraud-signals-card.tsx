@@ -1,15 +1,16 @@
+'use client'
+
+import { useTranslations } from 'next-intl'
 import type { FraudSignals } from '@/lib/types'
 
 type FraudKey = Exclude<keyof FraudSignals, 'amountExceedsCategoryLimit'>
 
-const signalLabels: Record<FraudKey, string> = {
-  geminiDigitalTampering: 'Adulteração digital detectada',
-  geminiAiGenerated: 'Documento gerado por IA',
-  geminiNotADocument: 'Arquivo não é um documento válido',
-  geminiInconsistentData: 'Dados inconsistentes no documento',
-}
-
-const FRAUD_KEYS = Object.keys(signalLabels) as FraudKey[]
+const FRAUD_KEYS: FraudKey[] = [
+  'geminiDigitalTampering',
+  'geminiAiGenerated',
+  'geminiNotADocument',
+  'geminiInconsistentData',
+]
 
 interface FraudSignalsCardProps {
   signals: FraudSignals
@@ -18,10 +19,11 @@ interface FraudSignalsCardProps {
 }
 
 export function FraudSignalsCard({ signals, fraudScore, fraudDetails }: FraudSignalsCardProps) {
+  const t = useTranslations('fraudSignals')
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900">Sinais de Fraude</h3>
+        <h3 className="font-semibold text-gray-900">{t('title')}</h3>
         <span
           className={`text-sm font-bold ${
             fraudScore >= 70
@@ -45,14 +47,14 @@ export function FraudSignalsCard({ signals, fraudScore, fraudDetails }: FraudSig
               }`}
             >
               <span className={active ? 'font-medium text-red-700' : 'text-gray-500'}>
-                {signalLabels[key]}
+                {t(key)}
               </span>
               <span
                 className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                   active ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
                 }`}
               >
-                {active ? 'Detectado' : 'OK'}
+                {active ? t('detected') : t('ok')}
               </span>
             </li>
           )
