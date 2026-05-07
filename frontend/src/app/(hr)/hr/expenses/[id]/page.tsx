@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState } from 'react'
+import { use, useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -17,6 +17,18 @@ export default function HrExpenseDetailPage({ params }: { params: Promise<{ id: 
   const queryClient = useQueryClient()
   const [rejectionReason, setRejectionReason] = useState('')
   const [showRejectForm, setShowRejectForm] = useState(false)
+  const [actionsOpen, setActionsOpen] = useState(false)
+  const actionsRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (actionsRef.current && !actionsRef.current.contains(e.target as Node)) {
+        setActionsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [])
 
   const { data: expense, isLoading } = useQuery({
     queryKey: ['hr-expense', id],
@@ -48,12 +60,55 @@ export default function HrExpenseDetailPage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-semibold">{expense.originalFilename}</h1>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <h1 className="truncate text-xl font-semibold" title={expense.originalFilename}>{expense.originalFilename}</h1>
           <StatusBadge status={expense.status} />
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* mobile: ações dropdown */}
+        <div className="relative sm:hidden" ref={actionsRef}>
+          <button
+            onClick={() => setActionsOpen((o) => !o)}
+            className="inline-flex items-center rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Ações
+            <svg className={`ml-1.5 h-4 w-4 transition-transform ${actionsOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {actionsOpen && (
+            <div className="absolute right-0 top-full z-10 mt-1 w-44 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+              <ul className="p-1 text-sm text-gray-700">
+                {expense.fileUrl && (
+                  <li>
+                    <a
+                      href={`${process.env.NEXT_PUBLIC_BACKEND_URL}${expense.fileUrl}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex w-full items-center rounded px-3 py-2 hover:bg-gray-100"
+                      onClick={() => setActionsOpen(false)}
+                    >
+                      Ver Comprovante
+                    </a>
+                  </li>
+                )}
+                <li>
+                  <Link
+                    href="/hr/expenses"
+                    className="inline-flex w-full items-center rounded px-3 py-2 hover:bg-gray-100"
+                    onClick={() => setActionsOpen(false)}
+                  >
+                    ← Voltar
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
+
+        {/* desktop: botões individuais */}
+        <div className="hidden shrink-0 items-center gap-2 sm:flex">
           {expense.fileUrl && (
             <a
               href={`${process.env.NEXT_PUBLIC_BACKEND_URL}${expense.fileUrl}`}
