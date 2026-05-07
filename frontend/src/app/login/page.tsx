@@ -9,12 +9,10 @@ import { useTranslations } from 'next-intl'
 import { useAuth } from '@/hooks/use-auth'
 import { useAuthContext } from '@/contexts/auth-context'
 
-const schema = z.object({
-  email: z.email(),
-  password: z.string().min(8),
-})
-
-type FormData = z.infer<typeof schema>
+type FormData = {
+  email: string
+  password: string
+}
 
 export default function LoginPage() {
   const router = useRouter()
@@ -22,6 +20,11 @@ export default function LoginPage() {
   const { refreshUser } = useAuthContext()
   const [error, setError] = useState<string | null>(null)
   const t = useTranslations('login')
+
+  const schema = z.object({
+    email: z.email(t('emailInvalid')),
+    password: z.string().min(8, t('passwordMin')),
+  })
 
   const {
     register,
